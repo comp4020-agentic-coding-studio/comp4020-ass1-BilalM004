@@ -1,0 +1,25 @@
+---
+interface Props {
+  class?: string;
+}
+
+const { class: className = "" } = Astro.props;
+---
+
+<svg
+  class:list={["rocket-figure", className]}
+  viewBox="0 0 80 200"
+  role="img"
+  aria-label="A rocket ready for launch"
+>
+  <g class="rocket-flame-group">
+    <path d="M32 178 Q40 210 48 178 Z" class="rocket-flame rocket-flame-outer" />
+    <path d="M36 178 Q40 198 44 178 Z" class="rocket-flame rocket-flame-inner" />
+  </g>
+  <path d="M28 60 Q40 4 52 60 Z" class="rocket-nose" />
+  <rect x="26" y="58" width="28" height="120" rx="10" class="rocket-body" />
+  <path d="M26 120 L8 168 L26 156 Z" class="rocket-fin" />
+  <path d="M54 120 L72 168 L54 156 Z" class="rocket-fin" />
+  <circle cx="40" cy="92" r="10" class="rocket-window" />
+  <circle cx="40" cy="92" r="10" class="rocket-window-rim" />
+</svg>

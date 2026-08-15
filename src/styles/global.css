@@ -2,6 +2,15 @@
   color-scheme: dark;
 }
 
+/*
+ * Author rules like `.screen { display: flex }` have higher cascade
+ * priority than the UA stylesheet's `[hidden] { display: none }`, so
+ * without this, hidden screens/layers stay laid out (and tabbable).
+ */
+[hidden] {
+  display: none !important;
+}
+
 body {
   margin: 0;
   padding: 0;
@@ -253,6 +262,205 @@ h1:focus-visible,
 h2:focus-visible {
   outline: 2px solid #8ab4ff;
   outline-offset: 3px;
+}
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+  border: 0;
+}
+
+.screen-launch {
+  position: relative;
+  overflow: hidden;
+  padding: 0 0 2rem;
+  gap: 0;
+  justify-content: flex-end;
+}
+
+.launch-ground {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  gap: 2rem;
+  padding-bottom: 3rem;
+  transition: opacity 0.7s ease;
+}
+
+.launch-ground.is-fading {
+  opacity: 0;
+}
+
+.launch-canvas {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  display: block;
+  width: 100%;
+  height: 100%;
+  opacity: 0;
+  transition: opacity 0.7s ease;
+}
+
+.launch-canvas.is-visible {
+  opacity: 1;
+}
+
+.launch-caption {
+  position: relative;
+  z-index: 2;
+  min-height: 1.6em;
+  margin: 0;
+  color: #c7c9d9;
+}
+
+.skip-button {
+  position: absolute;
+  top: 1rem;
+  right: 1rem;
+  z-index: 3;
+  min-height: 44px;
+  min-width: 44px;
+  padding: 0.5rem 1.25rem;
+  font-size: 0.95rem;
+  color: #f4f4f8;
+  background: rgb(20 20 30 / 60%);
+  border: 1px solid rgb(244 244 248 / 30%);
+  border-radius: 999px;
+  cursor: pointer;
+}
+
+.skip-button:hover {
+  background: rgb(20 20 30 / 85%);
+}
+
+.skip-button:focus-visible {
+  outline: 2px solid #8ab4ff;
+  outline-offset: 3px;
+}
+
+.launch-rocket {
+  width: 4.5rem;
+  height: auto;
+}
+
+.rocket-nose {
+  fill: #eaf6ff;
+}
+
+.rocket-body {
+  fill: #d8dce6;
+}
+
+.rocket-fin {
+  fill: #8ab4ff;
+}
+
+.rocket-window {
+  fill: #2b2b38;
+}
+
+.rocket-window-rim {
+  fill: none;
+  stroke: #eaf6ff;
+  stroke-width: 1.5;
+}
+
+.rocket-flame {
+  opacity: 0;
+  transform-origin: 40px 178px;
+}
+
+.rocket-flame-outer {
+  fill: #ff9c4a;
+}
+
+.rocket-flame-inner {
+  fill: #ffe08a;
+}
+
+.launch-rocket.is-igniting .rocket-flame,
+.launch-rocket.is-lifting .rocket-flame {
+  opacity: 1;
+  animation: flame-flicker 0.25s ease-in-out infinite;
+}
+
+.launch-twin-go.is-walking {
+  animation: twin-walk 2s ease-in-out forwards;
+}
+
+.launch-twin-go.is-boarding {
+  animation: twin-board 1s ease-in forwards;
+}
+
+.launch-rocket.is-lifting {
+  animation: rocket-liftoff 2.2s ease-in forwards;
+}
+
+@keyframes flame-flicker {
+  0%,
+  100% {
+    transform: scaleY(1);
+  }
+
+  50% {
+    transform: scaleY(1.15);
+  }
+}
+
+@keyframes twin-walk {
+  from {
+    transform: translateX(0);
+  }
+
+  to {
+    transform: translateX(2.5rem);
+  }
+}
+
+@keyframes twin-board {
+  from {
+    transform: translateX(2.5rem) scale(1);
+    opacity: 1;
+  }
+
+  to {
+    transform: translateX(2.5rem) scale(0.6);
+    opacity: 0;
+  }
+}
+
+@keyframes rocket-liftoff {
+  0% {
+    transform: translateY(0);
+  }
+
+  100% {
+    transform: translateY(-140vh);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .launch-ground,
+  .launch-canvas {
+    transition: none;
+  }
+
+  .launch-twin-go.is-walking,
+  .launch-twin-go.is-boarding,
+  .launch-rocket.is-lifting,
+  .rocket-flame {
+    animation: none;
+  }
 }
 
 .twins {

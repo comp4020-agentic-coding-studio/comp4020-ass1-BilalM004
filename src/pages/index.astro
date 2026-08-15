@@ -1,6 +1,7 @@
 ---
 import "../styles/global.css";
 import TwinCharacter from "../components/TwinCharacter.astro";
+import Rocket from "../components/Rocket.astro";
 
 const STAR_COUNT = 120;
 const stars = Array.from({ length: STAR_COUNT }, () => ({
@@ -51,6 +52,27 @@ const stars = Array.from({ length: STAR_COUNT }, () => ({
           <TwinCharacter label="The twin who goes" suited />
         </div>
         <p>What if one of you could travel near the speed of light?</p>
+        <button id="choice-button" class="start-button" type="button">Find out</button>
+      </section>
+
+      <section id="screen-choice" class="screen" data-screen="choice" hidden>
+        <h2 tabindex="-1">Choose a path</h2>
+        <p class="tagline">Speed bends time too. Follow the twin who goes.</p>
+        <button id="special-relativity-button" class="start-button" type="button">
+          Special Relativity
+        </button>
+      </section>
+
+      <section id="screen-launch" class="screen screen-launch" data-screen="launch" hidden>
+        <h2 tabindex="-1" class="sr-only">Launch sequence</h2>
+        <div class="launch-ground" id="launch-ground">
+          <TwinCharacter label="The twin who stays" shirtColor="#8ab4ff" class="launch-twin-stay" />
+          <Rocket class="launch-rocket" />
+          <TwinCharacter label="The twin who goes" suited class="launch-twin-go" />
+        </div>
+        <canvas id="launch-canvas" class="launch-canvas"></canvas>
+        <p id="launch-caption" class="launch-caption" aria-live="polite"></p>
+        <button id="launch-skip-button" class="skip-button" type="button">Skip</button>
       </section>
     </main>
 
