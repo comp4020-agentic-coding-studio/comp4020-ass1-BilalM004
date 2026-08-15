@@ -42,6 +42,26 @@ and see `spec/README.md` for how the checks in this repo relate to it.
   of "make it faster / slower / longer" shouldn't each trigger a full build +
   lint + test + screenshot pass.
 
+## Testing async failure paths
+
+Some interactions depend on an async resource that can fail --- the launch
+cutscene's 3D scene load, any future fetch. Don't verify that failure path by
+manually blocking network requests in a live browser: URL-pattern/glob
+matching is fragile (a dev server can serve more than one request shape for
+the same asset --- e.g. Vite's `?import` module-wrapper request vs. the real
+byte fetch --- so a pattern broad enough to catch one can silently catch both
+and break the whole page instead of the one thing you meant to break), and it
+depends on the block registering before the code path actually runs.
+
+Instead, write a real Vitest test that mocks the exact dependency the code
+already loads dynamically, e.g. `vi.mock("three", () => { throw new Error(...) })`
+for the `await import("three")` in `launchScene.ts`, then assert the fallback
+UI state directly. See `spec/launchScene.test.ts`. This only works cleanly
+because the dependency is behind a dynamic `import()` inside the function that
+can fail --- mocking a *static* top-level import the same way breaks module
+resolution for every file that imports it, the same class of mistake as the
+network layer.
+
 ## The checks (your sensors)
 
 CI runs these on every push once your repo is public. GitHub's checks UI shows
