@@ -152,11 +152,14 @@ means building legibly is part of building well.
 You don't need a name, a student number, or any identity file in the repo: we
 know whose repo it is. Spend the effort on the work.
 
-## This file is yours
+## This Project
+Explaining Einstein's theory of relativity in an interactive story adventure style
 
-This CLAUDE.md is a starting point, not a fixed rulebook. As you learn what your
-prototype needs --- a convention to hold the agent to, a sensor that keeps
-catching you out, a fact about the stack the agent keeps getting wrong --- write
-it down here. Growing this file is the work of harness engineering, and the gap
-between this boilerplate and your own version is part of what your prototype
-says about the developer you're becoming.
+- **One idea:** "Time isn't constant — both speed and gravity bend it"
+- **Physics:** Lorentz factor γ = 1/√(1 - v²/c²); Schwarzschild t_far = t_near / √(1 - r_s/r). Spot-check: 0.99c → γ≈7.09
+- **Viewports:** 1920×1080 desktop, 390×844 mobile. Test both after every major change
+- **Split screen:** side-by-side ≥600px, stacked <600px
+- **Performance:** 3D scene <3s load, ≥30fps mobile
+- **Accessibility:** keyboard-navigable, aria-labels on sliders
+- **Resilience:** keyboard, mid-resize, slow connection
+
