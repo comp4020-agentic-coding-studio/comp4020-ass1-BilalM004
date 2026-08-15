@@ -1,16 +1,111 @@
-body {
-  margin: 0;
-  padding: 2rem;
-  font-family: system-ui, sans-serif;
-  line-height: 1.6;
-  color: #1a1a1a;
+:root {
+  color-scheme: dark;
 }
 
-main {
-  max-width: 40rem;
-  margin: 0 auto;
+body {
+  margin: 0;
+  padding: 0;
+  min-height: 100vh;
+  background: #000;
+  font-family: system-ui, sans-serif;
+  line-height: 1.6;
+  color: #f4f4f8;
+}
+
+header {
+  position: relative;
+  z-index: 2;
+}
+
+nav {
+  padding: 1rem;
 }
 
 a {
-  color: #0b5fff;
+  color: #8ab4ff;
+}
+
+.stars {
+  position: fixed;
+  inset: 0;
+  overflow: hidden;
+  pointer-events: none;
+  z-index: 0;
+}
+
+.star {
+  position: absolute;
+  top: var(--top);
+  left: var(--left);
+  width: var(--size);
+  height: var(--size);
+  border-radius: 50%;
+  background: #fff;
+  box-shadow: 0 0 4px rgb(255 255 255 / 80%);
+  opacity: 0.2;
+  animation: twinkle var(--duration) ease-in-out var(--delay) infinite;
+}
+
+@keyframes twinkle {
+  0%,
+  100% {
+    opacity: 0.2;
+  }
+
+  50% {
+    opacity: 1;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .star {
+    animation: none;
+    opacity: 0.6;
+  }
+}
+
+main {
+  position: relative;
+  z-index: 1;
+}
+
+.screen {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 1rem;
+  padding: 2rem;
+  text-align: center;
+}
+
+.tagline {
+  max-width: 30rem;
+  color: #c7c9d9;
+}
+
+.start-button {
+  min-height: 44px;
+  min-width: 44px;
+  padding: 0.75rem 2rem;
+  margin-top: 1rem;
+  font-size: 1.1rem;
+  color: #000;
+  background: #f4f4f8;
+  border: none;
+  border-radius: 999px;
+  cursor: pointer;
+}
+
+.start-button:hover {
+  background: #8ab4ff;
+}
+
+.start-button:focus-visible,
+a:focus-visible,
+h1:focus-visible,
+h2:focus-visible {
+  outline: 2px solid #8ab4ff;
+  outline-offset: 3px;
 }

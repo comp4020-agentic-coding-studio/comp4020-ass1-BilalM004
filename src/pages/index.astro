@@ -1,5 +1,14 @@
 ---
 import "../styles/global.css";
+
+const STAR_COUNT = 120;
+const stars = Array.from({ length: STAR_COUNT }, () => ({
+  top: Math.random() * 100,
+  left: Math.random() * 100,
+  size: (Math.random() * 1.6 + 1).toFixed(2),
+  delay: (Math.random() * 6).toFixed(2),
+  duration: (Math.random() * 3 + 3).toFixed(2),
+}));
 ---
 
 <!doctype html>
@@ -7,21 +16,39 @@ import "../styles/global.css";
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>COMP4020 prototype</title>
+    <title>Time is Trippy — A Story of Relativity</title>
   </head>
   <body>
     <header>
       <nav aria-label="Primary">
-        <a href="./">Home</a>
+        <a href="#screen-start" data-action="restart">Restart</a>
       </nav>
     </header>
-    <main>
-      <h1>COMP4020 prototype</h1>
-      <p data-testid="intro">
-        Replace this with your prototype. This week's brief is on the course website;
-        <code>spec/README.md</code> explains how the checks in this repo relate to it.
-      </p>
+
+    <div class="stars" aria-hidden="true">
+      {
+        stars.map((star) => (
+          <span
+            class="star"
+            style={`--top:${star.top}%; --left:${star.left}%; --size:${star.size}px; --delay:${star.delay}s; --duration:${star.duration}s;`}
+          />
+        ))
+      }
+    </div>
+
+    <main id="app">
+      <section id="screen-start" class="screen" data-screen="start">
+        <h1 tabindex="-1">Time is Trippy</h1>
+        <p class="tagline">A visual, interactive story about the theory of relativity.</p>
+        <button id="start-button" class="start-button" type="button">Start</button>
+      </section>
+
+      <section id="screen-intro" class="screen" data-screen="intro" hidden>
+        <h2 tabindex="-1">Meet the twins.</h2>
+        <p>What if one of you could travel near the speed of light?</p>
+      </section>
     </main>
+
     <script src="../scripts/main.ts"></script>
   </body>
 </html>
