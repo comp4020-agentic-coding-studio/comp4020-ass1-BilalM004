@@ -1,0 +1,55 @@
+---
+interface Props {
+  label: string;
+  suited?: boolean;
+  shirtColor?: string;
+  class?: string;
+}
+
+const { label, suited = false, shirtColor = "#8ab4ff", class: className = "" } = Astro.props;
+---
+
+<figure class:list={["twin", className]}>
+  <svg
+    class="twin-figure"
+    viewBox="0 0 120 200"
+    role="img"
+    aria-label={label}
+    style={`--shirt: ${shirtColor};`}
+  >
+    {
+      suited ? (
+        <g class="twin-suited">
+          <rect x="30" y="70" width="60" height="90" rx="18" class="suit-body" />
+          <rect x="10" y="78" width="24" height="55" rx="10" class="suit-body" />
+          <rect x="86" y="78" width="24" height="55" rx="10" class="suit-body" />
+          <rect x="34" y="150" width="20" height="40" rx="8" class="suit-boot" />
+          <rect x="66" y="150" width="20" height="40" rx="8" class="suit-boot" />
+          <circle cx="60" cy="112" r="7" class="suit-light" />
+          <circle cx="60" cy="42" r="26" class="suit-helmet" />
+          <circle cx="60" cy="44" r="22" class="body-skin" />
+          <path d="M38 40 a22 22 0 0 1 44 0 v-6 a22 18 0 0 0 -44 0 z" class="body-hair" />
+          <circle cx="52" cy="42" r="2.4" class="face-eye" />
+          <circle cx="68" cy="42" r="2.4" class="face-eye" />
+          <path d="M52 52 Q60 57 68 52" class="face-mouth" />
+          <ellipse cx="60" cy="42" rx="16" ry="19" class="suit-visor" />
+          <path d="M47 28 Q52 24 58 25" class="suit-visor-shine" />
+        </g>
+      ) : (
+        <g class="twin-plain">
+          <rect x="34" y="78" width="52" height="82" rx="14" class="body-shirt" />
+          <rect x="16" y="82" width="20" height="50" rx="9" class="body-skin" />
+          <rect x="84" y="82" width="20" height="50" rx="9" class="body-skin" />
+          <rect x="38" y="150" width="18" height="40" rx="6" class="body-leg" />
+          <rect x="64" y="150" width="18" height="40" rx="6" class="body-leg" />
+          <circle cx="60" cy="44" r="24" class="body-skin" />
+          <path d="M36 40 a24 24 0 0 1 48 0 v-6 a24 20 0 0 0 -48 0 z" class="body-hair" />
+          <circle cx="52" cy="42" r="2.4" class="face-eye" />
+          <circle cx="68" cy="42" r="2.4" class="face-eye" />
+          <path d="M52 52 Q60 57 68 52" class="face-mouth" />
+        </g>
+      )
+    }
+  </svg>
+  <figcaption>{label}</figcaption>
+</figure>

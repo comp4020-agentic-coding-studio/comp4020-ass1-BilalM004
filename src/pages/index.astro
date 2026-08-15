@@ -1,5 +1,6 @@
 ---
 import "../styles/global.css";
+import TwinCharacter from "../components/TwinCharacter.astro";
 
 const STAR_COUNT = 120;
 const stars = Array.from({ length: STAR_COUNT }, () => ({
@@ -45,6 +46,10 @@ const stars = Array.from({ length: STAR_COUNT }, () => ({
 
       <section id="screen-intro" class="screen" data-screen="intro" hidden>
         <h2 tabindex="-1">Meet the twins.</h2>
+        <div class="twins">
+          <TwinCharacter label="The twin who stays" shirtColor="#8ab4ff" />
+          <TwinCharacter label="The twin who goes" suited />
+        </div>
         <p>What if one of you could travel near the speed of light?</p>
       </section>
     </main>
