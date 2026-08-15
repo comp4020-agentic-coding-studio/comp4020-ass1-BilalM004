@@ -38,13 +38,3 @@ Show ageing through simple, visible changes: hair colour (dark → grey → whit
 - The iframe streams from YouTube — we do not host any audio files.
 - On mobile: the button should sit above any other fixed UI and not overlap interactive elements.
 
-#### **Constraints**
-- **Two viewports must work:** 1920×1080 desktop and 390×844 mobile (latest Chrome)
-- **Test at both viewports after every major change.** Do not defer mobile testing.
-	- -it works at both marking viewports (desktop and phone)
-- **Split screen:** side-by-side on desktop (≥600px), stacked vertically on mobile (<600px)
-- **Performance:** 3D scene must load in <3 seconds and run at ≥30fps on mobile. If it doesn't, flag it immediately — don't ship a slow scene.
-- **Accessibility:** all interactive elements must be keyboard-navigable. Sliders need aria-labels.
-- holds up under use it wasn’t designed for: the keyboard, a resize mid-interaction, a slow connection.
-- static and client-side throughout, and the starter's invariant checks pass
-- the visitor does something that changes what they see — state the core interaction plainly enough to write a test for it
