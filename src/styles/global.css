@@ -64,6 +64,151 @@ a {
   }
 }
 
+.glitch {
+  position: relative;
+  display: inline-block;
+  animation: glitch-jitter 2s infinite;
+}
+
+.glitch::before,
+.glitch::after {
+  content: attr(data-text);
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+}
+
+.glitch::before {
+  color: #ff2b6b;
+  animation: glitch-before 2s infinite;
+}
+
+.glitch::after {
+  color: #2bd9ff;
+  animation: glitch-after 2s infinite;
+}
+
+@keyframes glitch-jitter {
+  0%,
+  89%,
+  100% {
+    transform: translate(0, 0);
+  }
+
+  90% {
+    transform: translate(-2px, 1px);
+  }
+
+  92% {
+    transform: translate(2px, -1px);
+  }
+
+  94% {
+    transform: translate(-2px, 0);
+  }
+
+  96% {
+    transform: translate(2px, 1px);
+  }
+
+  98% {
+    transform: translate(-1px, -1px);
+  }
+}
+
+@keyframes glitch-before {
+  0%,
+  89%,
+  100% {
+    opacity: 0;
+    clip-path: inset(0 0 0 0);
+    transform: translate(0, 0);
+  }
+
+  90% {
+    opacity: 1;
+    clip-path: inset(15% 0 55% 0);
+    transform: translate(-3px, 0);
+  }
+
+  92% {
+    opacity: 1;
+    clip-path: inset(60% 0 5% 0);
+    transform: translate(3px, 0);
+  }
+
+  94% {
+    opacity: 1;
+    clip-path: inset(30% 0 40% 0);
+    transform: translate(-2px, 0);
+  }
+
+  96% {
+    opacity: 1;
+    clip-path: inset(5% 0 70% 0);
+    transform: translate(3px, 0);
+  }
+
+  98% {
+    opacity: 0;
+    clip-path: inset(45% 0 20% 0);
+    transform: translate(-2px, 0);
+  }
+}
+
+@keyframes glitch-after {
+  0%,
+  89%,
+  100% {
+    opacity: 0;
+    clip-path: inset(0 0 0 0);
+    transform: translate(0, 0);
+  }
+
+  90% {
+    opacity: 1;
+    clip-path: inset(65% 0 10% 0);
+    transform: translate(3px, 0);
+  }
+
+  92% {
+    opacity: 1;
+    clip-path: inset(10% 0 60% 0);
+    transform: translate(-3px, 0);
+  }
+
+  94% {
+    opacity: 1;
+    clip-path: inset(50% 0 25% 0);
+    transform: translate(2px, 0);
+  }
+
+  96% {
+    opacity: 1;
+    clip-path: inset(20% 0 50% 0);
+    transform: translate(-3px, 0);
+  }
+
+  98% {
+    opacity: 0;
+    clip-path: inset(40% 0 30% 0);
+    transform: translate(2px, 0);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .glitch,
+  .glitch::before,
+  .glitch::after {
+    animation: none;
+  }
+
+  .glitch::before,
+  .glitch::after {
+    opacity: 0;
+  }
+}
+
 main {
   position: relative;
   z-index: 1;
