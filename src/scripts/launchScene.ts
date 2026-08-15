@@ -410,7 +410,7 @@ async function ensureScene(sequence: ActiveSequence): Promise<SceneController> {
   if (sequence.scene) return sequence.scene;
   if (sequence.sceneLoading) return sequence.sceneLoading;
 
-  sequence.sceneLoading = (async () => {
+  const loading = (async () => {
     const THREE = await import("three");
     const scene = await buildScene(THREE, sequence.refs.canvas);
     if (active !== sequence) {
@@ -423,7 +423,25 @@ async function ensureScene(sequence: ActiveSequence): Promise<SceneController> {
     window.addEventListener("orientationchange", sequence.resizeListener);
     return scene;
   })();
+
+  // A failed load (dropped network request, chunk-load error) must not be
+  // cached forever -- otherwise a later retry (e.g. clicking Skip) would
+  // just replay the same dead rejected promise and silently do nothing.
+  sequence.sceneLoading = loading.catch((error: unknown) => {
+    if (sequence.sceneLoading === loading) sequence.sceneLoading = null;
+    throw error;
+  });
   return sequence.sceneLoading;
+}
+
+// The space scene failed to load (network hiccup, WebGL unavailable, etc).
+// Finish the story without it rather than leaving the ground scene stuck
+// forever with no way to progress.
+function finishWithoutScene(sequence: ActiveSequence, error: unknown): void {
+  console.error("Launch sequence: space scene failed to load, skipping to the end.", error);
+  sequence.refs.ground.hidden = true;
+  sequence.refs.caption.textContent = STAGES[STAGES.length - 1].caption;
+  finishSequence(sequence);
 }
 
 function runSpaceCutscene(sequence: ActiveSequence, scene: SceneController): void {
@@ -468,7 +486,13 @@ function finishSequence(sequence: ActiveSequence): void {
 }
 
 async function crossFadeIntoScene(sequence: ActiveSequence): Promise<void> {
-  const scene = await ensureScene(sequence);
+  let scene: SceneController;
+  try {
+    scene = await ensureScene(sequence);
+  } catch (error) {
+    if (active === sequence) finishWithoutScene(sequence, error);
+    return;
+  }
   if (active !== sequence) return;
   scene.renderPose(0, 0);
   sequence.refs.canvas.classList.add("is-visible");
@@ -523,13 +547,18 @@ export function startLaunchSequence(refs: LaunchRefs): void {
 
   if (prefersReducedMotion()) {
     refs.ground.hidden = true;
-    void ensureScene(sequence).then((scene) => {
-      if (active !== sequence) return;
-      refs.canvas.classList.add("is-visible");
-      scene.renderPose(STAGES.length - 1, 1);
-      refs.caption.textContent = STAGES[STAGES.length - 1].caption;
-      finishSequence(sequence);
-    });
+    void ensureScene(sequence).then(
+      (scene) => {
+        if (active !== sequence) return;
+        refs.canvas.classList.add("is-visible");
+        scene.renderPose(STAGES.length - 1, 1);
+        refs.caption.textContent = STAGES[STAGES.length - 1].caption;
+        finishSequence(sequence);
+      },
+      (error: unknown) => {
+        if (active === sequence) finishWithoutScene(sequence, error);
+      },
+    );
     return;
   }
 
@@ -545,12 +574,17 @@ export function skipLaunchSequence(): void {
   sequence.refs.ground.hidden = true;
   sequence.refs.canvas.classList.add("is-visible");
 
-  void ensureScene(sequence).then((scene) => {
-    if (active !== sequence) return;
-    scene.renderPose(STAGES.length - 1, 1);
-    sequence.refs.caption.textContent = STAGES[STAGES.length - 1].caption;
-    finishSequence(sequence);
-  });
+  void ensureScene(sequence).then(
+    (scene) => {
+      if (active !== sequence) return;
+      scene.renderPose(STAGES.length - 1, 1);
+      sequence.refs.caption.textContent = STAGES[STAGES.length - 1].caption;
+      finishSequence(sequence);
+    },
+    (error: unknown) => {
+      if (active === sequence) finishWithoutScene(sequence, error);
+    },
+  );
 }
 
 export function stopLaunchSequence(): void {
