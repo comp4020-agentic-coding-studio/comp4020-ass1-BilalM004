@@ -35,6 +35,12 @@ and see `spec/README.md` for how the checks in this repo relate to it.
   --- the page is wrong until the check is green, not until you decide it should
   be.
 - Commit when the checks pass. Never commit a red state.
+- When iterating on a small visual/behavioural tweak (animation timing, copy,
+  spacing, colour), make the edit and describe what changed, then ask before
+  running `pnpm check` or opening a browser to verify. Batch verification once
+  the direction is settled, not after every micro-adjustment --- several rounds
+  of "make it faster / slower / longer" shouldn't each trigger a full build +
+  lint + test + screenshot pass.
 
 ## The checks (your sensors)
 
