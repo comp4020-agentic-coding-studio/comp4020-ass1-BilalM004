@@ -8,18 +8,34 @@ const { class: className = "" } = Astro.props;
 
 <svg
   class:list={["rocket-figure", className]}
-  viewBox="0 0 80 200"
+  viewBox="0 0 100 220"
   role="img"
   aria-label="A rocket ready for launch"
 >
+  <defs>
+    <linearGradient id="rocket-nose-gradient" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0%" stop-color="#a9bcd4" />
+      <stop offset="45%" stop-color="#f4faff" />
+      <stop offset="100%" stop-color="#c7d9ec" />
+    </linearGradient>
+    <linearGradient id="rocket-body-gradient" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0%" stop-color="#a2a8ba" />
+      <stop offset="45%" stop-color="#eef1f8" />
+      <stop offset="100%" stop-color="#b6bcca" />
+    </linearGradient>
+  </defs>
   <g class="rocket-flame-group">
-    <path d="M32 178 Q40 210 48 178 Z" class="rocket-flame rocket-flame-outer" />
-    <path d="M36 178 Q40 198 44 178 Z" class="rocket-flame rocket-flame-inner" />
+    <path d="M36 196 Q50 240 64 196 Z" class="rocket-flame rocket-flame-outer" />
+    <path d="M42 196 Q50 224 58 196 Z" class="rocket-flame rocket-flame-inner" />
   </g>
-  <path d="M28 60 Q40 4 52 60 Z" class="rocket-nose" />
-  <rect x="26" y="58" width="28" height="120" rx="10" class="rocket-body" />
-  <path d="M26 120 L8 168 L26 156 Z" class="rocket-fin" />
-  <path d="M54 120 L72 168 L54 156 Z" class="rocket-fin" />
-  <circle cx="40" cy="92" r="10" class="rocket-window" />
-  <circle cx="40" cy="92" r="10" class="rocket-window-rim" />
+  <path d="M40 192 L26 204 Q50 214 74 204 L60 192 Z" class="rocket-nozzle" />
+  <rect x="28" y="42" width="44" height="150" rx="14" class="rocket-body" />
+  <line x1="28" y1="104" x2="72" y2="104" class="rocket-seam" />
+  <line x1="28" y1="148" x2="72" y2="148" class="rocket-seam" />
+  <path d="M32 44 Q50 -8 68 44 Z" class="rocket-nose" />
+  <path d="M28 128 L2 190 L28 174 Z" class="rocket-fin" />
+  <path d="M72 128 L98 190 L72 174 Z" class="rocket-fin" />
+  <circle cx="50" cy="82" r="15" class="rocket-window" />
+  <circle cx="50" cy="82" r="15" class="rocket-window-rim" />
+  <path d="M42 74 A 10 10 0 0 1 55 69" class="rocket-window-shine" />
 </svg>

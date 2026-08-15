@@ -349,16 +349,25 @@ h2:focus-visible {
 }
 
 .launch-rocket {
-  width: 4.5rem;
+  width: 9rem;
   height: auto;
 }
 
 .rocket-nose {
-  fill: #eaf6ff;
+  fill: url("#rocket-nose-gradient");
 }
 
 .rocket-body {
-  fill: #d8dce6;
+  fill: url("#rocket-body-gradient");
+}
+
+.rocket-seam {
+  stroke: rgb(43 43 56 / 35%);
+  stroke-width: 1.5;
+}
+
+.rocket-nozzle {
+  fill: #7d8296;
 }
 
 .rocket-fin {
@@ -375,9 +384,17 @@ h2:focus-visible {
   stroke-width: 1.5;
 }
 
+.rocket-window-shine {
+  fill: none;
+  stroke: #fff;
+  stroke-width: 2;
+  stroke-linecap: round;
+  opacity: 0.6;
+}
+
 .rocket-flame {
   opacity: 0;
-  transform-origin: 40px 178px;
+  transform-origin: 50px 192px;
 }
 
 .rocket-flame-outer {
@@ -423,18 +440,18 @@ h2:focus-visible {
   }
 
   to {
-    transform: translateX(2.5rem);
+    transform: translateX(-2.5rem);
   }
 }
 
 @keyframes twin-board {
   from {
-    transform: translateX(2.5rem) scale(1);
+    transform: translateX(-2.5rem) scale(1);
     opacity: 1;
   }
 
   to {
-    transform: translateX(2.5rem) scale(0.6);
+    transform: translateX(-2.5rem) scale(0.6);
     opacity: 0;
   }
 }
@@ -447,6 +464,31 @@ h2:focus-visible {
   100% {
     transform: translateY(-140vh);
   }
+}
+
+@media (width <= 480px) {
+  .launch-ground {
+    gap: 1rem;
+  }
+
+  .launch-twin-stay .twin-figure,
+  .launch-twin-go .twin-figure {
+    width: 5rem;
+  }
+
+  .launch-rocket {
+    width: 5.5rem;
+  }
+}
+
+.texture-credit {
+  position: absolute;
+  bottom: 0.5rem;
+  left: 1rem;
+  z-index: 2;
+  margin: 0;
+  font-size: 0.7rem;
+  color: rgb(199 201 217 / 60%);
 }
 
 @media (prefers-reduced-motion: reduce) {

@@ -1,3 +1,13 @@
+import earthTextureUrl from "../assets/textures/earth.jpg";
+import earthCloudsTextureUrl from "../assets/textures/earth_clouds.jpg";
+import venusTextureUrl from "../assets/textures/venus.jpg";
+import marsTextureUrl from "../assets/textures/mars.jpg";
+import jupiterTextureUrl from "../assets/textures/jupiter.jpg";
+import saturnTextureUrl from "../assets/textures/saturn.jpg";
+import saturnRingUrl from "../assets/textures/saturn_ring.png";
+import sunTextureUrl from "../assets/textures/sun.jpg";
+import { makeGlowTexture, makeMetalTexture, makeRingTextureFromStrip } from "./proceduralTextures";
+
 export interface LaunchRefs {
   ground: HTMLElement;
   canvas: HTMLCanvasElement;
@@ -5,57 +15,82 @@ export interface LaunchRefs {
   skipButton: HTMLButtonElement;
 }
 
-interface Stage {
+type Vec3 = [number, number, number];
+
+interface WideStage {
+  mode: "wide";
   caption: string;
   duration: number;
-  camFrom: [number, number, number];
-  camTo: [number, number, number];
-  lookFrom: [number, number, number];
-  lookTo: [number, number, number];
-  rocketFrom: [number, number, number];
-  rocketTo: [number, number, number];
+  camFrom: Vec3;
+  camTo: Vec3;
+  lookFrom: Vec3;
+  lookTo: Vec3;
+  rocketFrom: Vec3;
+  rocketTo: Vec3;
 }
 
+interface ChaseStage {
+  mode: "chase";
+  caption: string;
+  duration: number;
+  rocketFrom: Vec3;
+  rocketTo: Vec3;
+  // Camera position/lookAt are the rocket's live position plus these eased
+  // offsets, so the shot follows the rocket instead of holding a fixed frame.
+  chaseOffsetFrom: Vec3;
+  chaseOffsetTo: Vec3;
+  lookAheadFrom: Vec3;
+  lookAheadTo: Vec3;
+}
+
+type Stage = WideStage | ChaseStage;
+
+// World layout: Earth at the origin, everything else placed along the
+// rocket's outbound path so the two chase stages fly close past them.
 const STAGES: Stage[] = [
   {
+    mode: "wide",
     caption: "Leaving Earth",
     duration: 3000,
-    camFrom: [0, 1.5, 4.5],
-    camTo: [0, 2.5, 6],
+    camFrom: [0, 1.6, 4.8],
+    camTo: [0, 2.8, 6.5],
     lookFrom: [0, 1, 0],
-    lookTo: [0, 2, 0],
+    lookTo: [0, 2.2, 0],
     rocketFrom: [0, 1.1, 0],
-    rocketTo: [0, 2.2, 0],
+    rocketTo: [0, 2.4, 0],
   },
   {
+    mode: "chase",
     caption: "Out into space",
     duration: 3000,
-    camFrom: [0, 2.5, 6],
-    camTo: [0, 6, 24],
-    lookFrom: [0, 2, 0],
-    lookTo: [0, 3, 0],
-    rocketFrom: [0, 2.2, 0],
-    rocketTo: [0, 6, 0],
+    rocketFrom: [0, 2.4, 0],
+    rocketTo: [5, 2, -20],
+    chaseOffsetFrom: [0, 1.3, 5.5],
+    chaseOffsetTo: [0, 0.9, 3.4],
+    lookAheadFrom: [0, 0, -6],
+    lookAheadTo: [2, 0, -10],
   },
   {
+    mode: "chase",
     caption: "Past the solar system",
     duration: 3000,
-    camFrom: [0, 6, 24],
-    camTo: [0, 24, 90],
-    lookFrom: [0, 3, 0],
-    lookTo: [0, 30, -50],
-    rocketFrom: [0, 6, 0],
-    rocketTo: [0, 22, -25],
+    rocketFrom: [5, 2, -20],
+    rocketTo: [-9, 8, -80],
+    chaseOffsetFrom: [0, 1, 4],
+    chaseOffsetTo: [0, 2.5, 7],
+    lookAheadFrom: [-3, 1, -12],
+    lookAheadTo: [0, 1, -14],
   },
   {
+    mode: "wide",
     caption: "Into empty space",
     duration: 2500,
-    camFrom: [0, 24, 90],
-    camTo: [0, 90, 340],
-    lookFrom: [0, 30, -50],
-    lookTo: [0, 40, -60],
-    rocketFrom: [0, 22, -25],
-    rocketTo: [0, 40, -60],
+    camFrom: [-9, 20, -40],
+    camTo: [-22, 55, -250],
+    lookFrom: [-9, 8, -80],
+    lookTo: [-16, 11, -170],
+    rocketFrom: [-9, 8, -80],
+    rocketTo: [-15, 11, -140],
   },
 ];
 
@@ -82,24 +117,48 @@ interface SceneController {
   dispose(): void;
 }
 
+interface PlanetSpec {
+  radius: number;
+  position: Vec3;
+  texture: InstanceType<typeof import("three").Texture>;
+  ring?: boolean;
+}
+
 async function buildScene(
   THREE: typeof import("three"),
   canvas: HTMLCanvasElement,
 ): Promise<SceneController> {
   const renderer = new THREE.WebGLRenderer({ canvas, antialias: false, alpha: false });
   renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+  renderer.toneMapping = THREE.ACESFilmicToneMapping;
 
-  const camera = new THREE.PerspectiveCamera(50, 1, 0.1, 2000);
+  const camera = new THREE.PerspectiveCamera(50, 1, 0.1, 3000);
   const scene = new THREE.Scene();
 
+  const loader = new THREE.TextureLoader();
+  const [earthTex, earthCloudsTex, sunTex, venusTex, marsTex, jupiterTex, saturnTex, saturnRingSource] =
+    await Promise.all([
+      loader.loadAsync(earthTextureUrl.src),
+      loader.loadAsync(earthCloudsTextureUrl.src),
+      loader.loadAsync(sunTextureUrl.src),
+      loader.loadAsync(venusTextureUrl.src),
+      loader.loadAsync(marsTextureUrl.src),
+      loader.loadAsync(jupiterTextureUrl.src),
+      loader.loadAsync(saturnTextureUrl.src),
+      loader.loadAsync(saturnRingUrl.src),
+    ]);
+  for (const tex of [earthTex, sunTex, venusTex, marsTex, jupiterTex, saturnTex]) {
+    tex.colorSpace = THREE.SRGBColorSpace;
+  }
+
   const earth = new THREE.Mesh(
-    new THREE.SphereGeometry(1, 24, 16),
-    new THREE.MeshBasicMaterial({ color: 0x3a6ea5 }),
+    new THREE.SphereGeometry(1, 32, 24),
+    new THREE.MeshStandardMaterial({ map: earthTex, roughness: 0.85 }),
   );
   scene.add(earth);
 
   const atmosphere = new THREE.Mesh(
-    new THREE.SphereGeometry(1.08, 24, 16),
+    new THREE.SphereGeometry(1.08, 32, 24),
     new THREE.MeshBasicMaterial({
       color: 0x8ab4ff,
       transparent: true,
@@ -109,43 +168,117 @@ async function buildScene(
   );
   scene.add(atmosphere);
 
+  const clouds = new THREE.Mesh(
+    new THREE.SphereGeometry(1.035, 32, 24),
+    new THREE.MeshStandardMaterial({
+      color: 0xffffff,
+      alphaMap: earthCloudsTex,
+      transparent: true,
+      depthWrite: false,
+      roughness: 1,
+    }),
+  );
+  scene.add(clouds);
+
+  const metalTexture = makeMetalTexture(THREE);
   const rocket = new THREE.Group();
+
   const rocketBody = new THREE.Mesh(
-    new THREE.CylinderGeometry(0.12, 0.12, 0.6, 8),
-    new THREE.MeshBasicMaterial({ color: 0xd8dce6 }),
+    new THREE.CylinderGeometry(0.2, 0.2, 1.1, 16),
+    new THREE.MeshStandardMaterial({ map: metalTexture, roughness: 0.4, metalness: 0.6 }),
   );
+  rocket.add(rocketBody);
+
   const rocketNose = new THREE.Mesh(
-    new THREE.ConeGeometry(0.12, 0.3, 8),
-    new THREE.MeshBasicMaterial({ color: 0xeaf6ff }),
+    new THREE.ConeGeometry(0.2, 0.5, 16),
+    new THREE.MeshStandardMaterial({ color: 0xeaf6ff, roughness: 0.3, metalness: 0.3 }),
   );
-  rocketNose.position.y = 0.45;
-  rocket.add(rocketBody, rocketNose);
+  rocketNose.position.y = 1.1 / 2 + 0.5 / 2;
+  rocket.add(rocketNose);
+
+  const rocketNozzle = new THREE.Mesh(
+    new THREE.CylinderGeometry(0.28, 0.18, 0.24, 16),
+    new THREE.MeshStandardMaterial({ color: 0x53586a, roughness: 0.5, metalness: 0.7 }),
+  );
+  rocketNozzle.position.y = -1.1 / 2 - 0.12;
+  rocket.add(rocketNozzle);
+
+  const finMaterial = new THREE.MeshStandardMaterial({ color: 0x8ab4ff, roughness: 0.5 });
+  for (let i = 0; i < 3; i += 1) {
+    const fin = new THREE.Mesh(new THREE.BoxGeometry(0.06, 0.5, 0.32), finMaterial);
+    const angle = (i / 3) * Math.PI * 2;
+    fin.position.set(Math.cos(angle) * 0.26, -1.1 / 2 + 0.05, Math.sin(angle) * 0.26);
+    fin.rotation.y = angle;
+    rocket.add(fin);
+  }
+
+  const flame = new THREE.Sprite(
+    new THREE.SpriteMaterial({
+      map: makeGlowTexture(THREE),
+      transparent: true,
+      blending: THREE.AdditiveBlending,
+      depthWrite: false,
+    }),
+  );
+  flame.scale.set(0.5, 0.9, 1);
+  flame.position.y = -1.1 / 2 - 0.4;
+  rocket.add(flame);
   scene.add(rocket);
 
-  const sun = new THREE.Mesh(
-    new THREE.SphereGeometry(4, 16, 12),
-    new THREE.MeshBasicMaterial({ color: 0xffcc66 }),
-  );
-  sun.position.set(0, 40, -60);
+  const sun = new THREE.Mesh(new THREE.SphereGeometry(5.5, 24, 16), new THREE.MeshBasicMaterial({ map: sunTex }));
+  sun.position.set(0, 8, -60);
   scene.add(sun);
 
-  const planetLayout: Array<{ radius: number; color: number; offset: [number, number, number] }> = [
-    { radius: 0.6, color: 0xd9a066, offset: [8, 3, 6] },
-    { radius: 1.0, color: 0x6fae67, offset: [-11, -4, 8] },
-    { radius: 0.8, color: 0xb3543a, offset: [5, -7, -10] },
-    { radius: 1.4, color: 0xdbb28a, offset: [-8, 8, -6] },
+  const sunLight = new THREE.PointLight(0xfff2d0, 4, 0, 0);
+  sunLight.position.copy(sun.position);
+  scene.add(sunLight);
+
+  const ambientLight = new THREE.AmbientLight(0x404050, 0.55);
+  scene.add(ambientLight);
+
+  const corona = new THREE.Sprite(
+    new THREE.SpriteMaterial({
+      map: makeGlowTexture(THREE),
+      transparent: true,
+      blending: THREE.AdditiveBlending,
+      depthWrite: false,
+    }),
+  );
+  corona.scale.set(17, 17, 1);
+  corona.position.copy(sun.position);
+  scene.add(corona);
+
+  // Offset from the rocket's own waypoints (see STAGES) so the close chase
+  // camera passes beside each body instead of arriving exactly inside it.
+  const planetSpecs: PlanetSpec[] = [
+    { radius: 0.85, position: [10, 5, -28], texture: venusTex },
+    { radius: 0.7, position: [-7, 3, -35], texture: marsTex },
+    { radius: 2.3, position: [9, -2, -50], texture: jupiterTex },
+    { radius: 1.8, position: [-16, 12, -92], texture: saturnTex, ring: true },
   ];
-  for (const planet of planetLayout) {
+  for (const spec of planetSpecs) {
     const mesh = new THREE.Mesh(
-      new THREE.SphereGeometry(planet.radius, 14, 10),
-      new THREE.MeshBasicMaterial({ color: planet.color }),
+      new THREE.SphereGeometry(spec.radius, 24, 16),
+      new THREE.MeshStandardMaterial({ map: spec.texture, roughness: 0.9 }),
     );
-    mesh.position.set(
-      sun.position.x + planet.offset[0],
-      sun.position.y + planet.offset[1],
-      sun.position.z + planet.offset[2],
-    );
+    mesh.position.set(...spec.position);
     scene.add(mesh);
+
+    if (spec.ring) {
+      const ringTexture = makeRingTextureFromStrip(THREE, saturnRingSource.image as HTMLImageElement, 256);
+      const ring = new THREE.Mesh(
+        new THREE.PlaneGeometry(spec.radius * 3.6, spec.radius * 3.6),
+        new THREE.MeshBasicMaterial({
+          map: ringTexture,
+          transparent: true,
+          side: THREE.DoubleSide,
+          depthWrite: false,
+        }),
+      );
+      ring.rotation.x = -Math.PI / 2.6;
+      ring.position.copy(mesh.position);
+      scene.add(ring);
+    }
   }
 
   const starCount = 2000;
@@ -175,25 +308,53 @@ async function buildScene(
     renderer.setSize(width, height, false);
   }
 
+  const upAxis = new THREE.Vector3(0, 1, 0);
+  const heading = new THREE.Vector3();
+
   function renderPose(stageIndex: number, t: number): void {
     const stage = STAGES[stageIndex] ?? STAGES[STAGES.length - 1];
     const eased = easeInOutCubic(t);
 
-    camera.position.set(
-      lerp(stage.camFrom[0], stage.camTo[0], eased),
-      lerp(stage.camFrom[1], stage.camTo[1], eased),
-      lerp(stage.camFrom[2], stage.camTo[2], eased),
-    );
-    camera.lookAt(
-      lerp(stage.lookFrom[0], stage.lookTo[0], eased),
-      lerp(stage.lookFrom[1], stage.lookTo[1], eased),
-      lerp(stage.lookFrom[2], stage.lookTo[2], eased),
-    );
-    rocket.position.set(
+    const rocketPos: Vec3 = [
       lerp(stage.rocketFrom[0], stage.rocketTo[0], eased),
       lerp(stage.rocketFrom[1], stage.rocketTo[1], eased),
       lerp(stage.rocketFrom[2], stage.rocketTo[2], eased),
+    ];
+    rocket.position.set(...rocketPos);
+
+    heading.set(
+      stage.rocketTo[0] - stage.rocketFrom[0],
+      stage.rocketTo[1] - stage.rocketFrom[1],
+      stage.rocketTo[2] - stage.rocketFrom[2],
     );
+    if (heading.lengthSq() > 0.0001) {
+      rocket.quaternion.setFromUnitVectors(upAxis, heading.normalize());
+    }
+    flame.visible = stageIndex === 0;
+
+    if (stage.mode === "wide") {
+      camera.position.set(
+        lerp(stage.camFrom[0], stage.camTo[0], eased),
+        lerp(stage.camFrom[1], stage.camTo[1], eased),
+        lerp(stage.camFrom[2], stage.camTo[2], eased),
+      );
+      camera.lookAt(
+        lerp(stage.lookFrom[0], stage.lookTo[0], eased),
+        lerp(stage.lookFrom[1], stage.lookTo[1], eased),
+        lerp(stage.lookFrom[2], stage.lookTo[2], eased),
+      );
+    } else {
+      camera.position.set(
+        rocketPos[0] + lerp(stage.chaseOffsetFrom[0], stage.chaseOffsetTo[0], eased),
+        rocketPos[1] + lerp(stage.chaseOffsetFrom[1], stage.chaseOffsetTo[1], eased),
+        rocketPos[2] + lerp(stage.chaseOffsetFrom[2], stage.chaseOffsetTo[2], eased),
+      );
+      camera.lookAt(
+        rocketPos[0] + lerp(stage.lookAheadFrom[0], stage.lookAheadTo[0], eased),
+        rocketPos[1] + lerp(stage.lookAheadFrom[1], stage.lookAheadTo[1], eased),
+        rocketPos[2] + lerp(stage.lookAheadFrom[2], stage.lookAheadTo[2], eased),
+      );
+    }
 
     renderer.render(scene, camera);
   }
