@@ -378,9 +378,21 @@ async function buildScene(
   return { renderPose, handleResize: resize, dispose };
 }
 
+// A ground-phase delay (walk -> board -> liftoff -> crossfade) that can be
+// frozen mid-countdown and resumed later with whatever time it had left --
+// unlike a bare `setTimeout`, which keeps counting wall-clock time even
+// while the tab is hidden (see CLAUDE.md).
+interface GroundTimer {
+  callback: () => void;
+  remaining: number;
+  handle: number | null;
+  armedAt: number;
+  fired: boolean;
+}
+
 interface ActiveSequence {
   refs: LaunchRefs;
-  groundTimeouts: number[];
+  groundTimers: GroundTimer[];
   raf: number | null;
   scene: SceneController | null;
   sceneLoading: Promise<SceneController> | null;
@@ -390,14 +402,66 @@ interface ActiveSequence {
 
 let active: ActiveSequence | null = null;
 
-function clearGroundTimeouts(sequence: ActiveSequence): void {
-  for (const id of sequence.groundTimeouts) window.clearTimeout(id);
-  sequence.groundTimeouts = [];
+function armGroundTimer(timer: GroundTimer): void {
+  timer.armedAt = performance.now();
+  timer.handle = window.setTimeout(() => {
+    timer.handle = null;
+    timer.fired = true;
+    timer.callback();
+  }, timer.remaining);
 }
+
+function scheduleGroundTimer(sequence: ActiveSequence, delay: number, callback: () => void): void {
+  const timer: GroundTimer = { callback, remaining: delay, handle: null, armedAt: 0, fired: false };
+  sequence.groundTimers.push(timer);
+  if (!document.hidden) armGroundTimer(timer);
+}
+
+function clearGroundTimeouts(sequence: ActiveSequence): void {
+  for (const timer of sequence.groundTimers) {
+    if (timer.handle !== null) window.clearTimeout(timer.handle);
+  }
+  sequence.groundTimers = [];
+}
+
+function pauseGroundTimers(sequence: ActiveSequence): void {
+  const now = performance.now();
+  for (const timer of sequence.groundTimers) {
+    if (timer.handle === null) continue;
+    window.clearTimeout(timer.handle);
+    timer.handle = null;
+    timer.remaining = Math.max(0, timer.remaining - (now - timer.armedAt));
+  }
+}
+
+function resumeGroundTimers(sequence: ActiveSequence): void {
+  // A timer that already fired naturally also has `handle === null` (cleared
+  // right before its callback ran) -- without the `fired` check, resuming
+  // after any later hide/reveal cycle would re-arm and refire it, e.g.
+  // replaying the crossfade into the space scene from scratch.
+  for (const timer of sequence.groundTimers) {
+    if (timer.handle === null && !timer.fired) armGroundTimer(timer);
+  }
+}
+
+// The ground phase's setTimeout chain doesn't pause itself when the tab is
+// hidden (unlike the space scene's rAF loop, which the browser already
+// suspends) -- so freeze its timers and its CSS animations together here,
+// and resume both from wherever they left off.
+document.addEventListener("visibilitychange", () => {
+  if (!active) return;
+  if (document.hidden) {
+    pauseGroundTimers(active);
+    active.refs.ground.classList.add("is-paused");
+  } else {
+    active.refs.ground.classList.remove("is-paused");
+    resumeGroundTimers(active);
+  }
+});
 
 function resetGroundLayer(refs: LaunchRefs): void {
   refs.ground.hidden = false;
-  refs.ground.classList.remove("is-fading");
+  refs.ground.classList.remove("is-fading", "is-paused");
   refs.ground.querySelector(".launch-twin-go")?.classList.remove("is-walking", "is-boarding");
   refs.ground.querySelector(".launch-rocket")?.classList.remove("is-igniting", "is-lifting");
   refs.canvas.classList.remove("is-visible");
@@ -497,10 +561,9 @@ async function crossFadeIntoScene(sequence: ActiveSequence): Promise<void> {
   scene.renderPose(0, 0);
   sequence.refs.canvas.classList.add("is-visible");
   sequence.refs.ground.classList.add("is-fading");
-  const hideGround = window.setTimeout(() => {
+  scheduleGroundTimer(sequence, 800, () => {
     sequence.refs.ground.hidden = true;
-  }, 800);
-  sequence.groundTimeouts.push(hideGround);
+  });
   runSpaceCutscene(sequence, scene);
 }
 
@@ -510,24 +573,19 @@ function playGroundSequence(sequence: ActiveSequence): void {
   const rocket = ground.querySelector(".launch-rocket");
 
   twinGo?.classList.add("is-walking");
-  const board = window.setTimeout(() => {
+  scheduleGroundTimer(sequence, GROUND_WALK_MS, () => {
     twinGo?.classList.remove("is-walking");
     twinGo?.classList.add("is-boarding");
     rocket?.classList.add("is-igniting");
-  }, GROUND_WALK_MS);
+  });
 
-  const liftoff = window.setTimeout(() => {
+  scheduleGroundTimer(sequence, GROUND_WALK_MS + GROUND_BOARD_MS, () => {
     rocket?.classList.add("is-lifting");
-  }, GROUND_WALK_MS + GROUND_BOARD_MS);
+  });
 
-  const crossfade = window.setTimeout(
-    () => {
-      void crossFadeIntoScene(sequence);
-    },
-    GROUND_WALK_MS + GROUND_BOARD_MS + GROUND_LIFTOFF_MS - CROSSFADE_LEAD_MS,
-  );
-
-  sequence.groundTimeouts.push(board, liftoff, crossfade);
+  scheduleGroundTimer(sequence, GROUND_WALK_MS + GROUND_BOARD_MS + GROUND_LIFTOFF_MS - CROSSFADE_LEAD_MS, () => {
+    void crossFadeIntoScene(sequence);
+  });
 }
 
 export function startLaunchSequence(refs: LaunchRefs): void {
@@ -535,7 +593,7 @@ export function startLaunchSequence(refs: LaunchRefs): void {
 
   const sequence: ActiveSequence = {
     refs,
-    groundTimeouts: [],
+    groundTimers: [],
     raf: null,
     scene: null,
     sceneLoading: null,

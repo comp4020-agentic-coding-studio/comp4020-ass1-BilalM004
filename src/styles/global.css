@@ -300,6 +300,20 @@ h2:focus-visible {
   opacity: 0;
 }
 
+/*
+ * The tab was backgrounded: JS has already frozen the ground-phase timers
+ * (see launchScene.ts), but the CSS keyframe animations they trigger keep
+ * advancing on their own wall clock unless paused here too. `!important` is
+ * required: e.g. `.launch-rocket.is-lifting`'s `animation: ... forwards`
+ * shorthand has equal specificity and comes later in the cascade, so its
+ * implicit `animation-play-state: running` would otherwise win and this
+ * rule would silently do nothing.
+ */
+.launch-ground.is-paused,
+.launch-ground.is-paused * {
+  animation-play-state: paused !important;
+}
+
 .launch-canvas {
   position: absolute;
   inset: 0;
