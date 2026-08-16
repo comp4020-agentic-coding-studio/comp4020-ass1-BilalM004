@@ -587,9 +587,15 @@ async function ensureScene(sequence: ActiveSequence): Promise<SceneController> {
   if (sequence.scene) return sequence.scene;
   if (sequence.sceneLoading) return sequence.sceneLoading;
 
+  // Pin the canvas this load builds against right now, before the first
+  // await -- if a stop (and the canvas renewal it does) happens while this
+  // is in flight, `sequence.refs.canvas` would otherwise point at whatever
+  // fresh canvas a *later* sequence has since started using, and this stale
+  // build would end up constructing its renderer on that shared node too.
+  const canvas = sequence.refs.canvas;
   const loading = (async () => {
     const THREE = await import("three");
-    const scene = await buildScene(THREE, sequence.refs.canvas);
+    const scene = await buildScene(THREE, canvas);
     if (active !== sequence) {
       scene.dispose();
       throw new Error("launch sequence was stopped before the scene finished loading");
@@ -771,6 +777,12 @@ export function stopLaunchSequence(): void {
     window.removeEventListener("orientationchange", sequence.resizeListener);
   }
   sequence.scene?.dispose();
-  if (sequence.scene) sequence.refs.canvas = renewCanvas(sequence.refs.canvas);
+  // Renew the canvas even if the scene never finished loading: ensureScene()
+  // constructs its WebGLRenderer synchronously before the scene is assigned,
+  // so a build that's still in flight when we stop can still call
+  // forceContextLoss() on this exact canvas later -- if a new sequence had
+  // since started on the same (un-renewed) node, that stale disposal would
+  // kill its live context out from under it.
+  sequence.refs.canvas = renewCanvas(sequence.refs.canvas);
   resetGroundLayer(sequence.refs);
 }
