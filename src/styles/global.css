@@ -1201,6 +1201,19 @@ h2:focus-visible {
   color: #c7c9d9;
 }
 
+/* The progress rail now sits in normal flow above main (see the rail's mobile
+ * block below), which leaves a few pixels less room than this screen's
+ * default gap assumed -- trim it rather than let the page scroll. */
+@media (width <= 480px) {
+  [data-screen="reunion"] {
+    gap: 0.5rem;
+  }
+
+  .reunion-twins {
+    gap: 1.5rem;
+  }
+}
+
 .split-rate-button:focus-visible,
 .split-velocity-slider:focus-visible,
 #split-bring-home-button:focus-visible {
@@ -1462,13 +1475,41 @@ h2:focus-visible {
   }
 }
 
-@media (width <= 480px) {
+/*
+ * Below 600px the rail becomes a static horizontal strip under the header
+ * instead of a fixed vertical column pinned to the left edge -- fixed
+ * positioning meant it floated on top of whatever screen content happened to
+ * share its vertical band (most visibly the compare screen's dense
+ * left-aligned panes, which also have the least horizontal padding to spare).
+ * As a normal-flow element it just adds its own height above main instead,
+ * which .screen's flex-fill already absorbs, so it can't overlap anything.
+ */
+@media (width < 600px) {
   .progress-rail {
-    left: 0.6rem;
-    padding: 0.85rem 0.6rem;
+    position: static;
+    top: auto;
+    left: auto;
+    padding: 0.5rem 1rem;
+    border-radius: 0;
+    transform: none;
+  }
+
+  .progress-rail ol {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 1.5rem;
   }
 
   .progress-step {
-    min-height: 1.9rem;
+    min-height: auto;
+  }
+
+  .progress-step:not(:first-child)::before {
+    top: 50%;
+    left: -1.5rem;
+    width: 1.5rem;
+    height: 2px;
+    transform: translateY(-50%);
   }
 }
