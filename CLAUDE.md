@@ -21,9 +21,11 @@ and see `spec/README.md` for how the checks in this repo relate to it.
 - Before you push, run `pnpm check`. It runs most of what CI runs --- build,
   lint, and the spec --- so you catch those in seconds instead of waiting for
   the pipeline. The links check, the evidence check, the secrets scan, and the
-  deploy itself only run in CI; run `pnpm dlx linkinator ./dist --silent`
-  locally against a fresh `pnpm build` for the links check without waiting for
-  CI.
+  deploy itself only run in CI; run `pnpm build && ln -s . dist/comp4020-ass1-BilalM004 && pnpm dlx linkinator ./dist --silent`
+  locally for the links check without waiting for CI --- the symlink stands in
+  for the `comp4020-ass1-BilalM004/` prefix every asset URL carries (Astro's
+  `base` config) but that `dist/` itself doesn't have, the same one the "Check
+  internal links" CI step adds and discards.
 - To see what the page actually looks like rather than what you assume it looks
   like, open it in a browser (the `agent-browser` CLI, documented on
   [the course site](https://comp.anu.edu.au/courses/comp4020-agentic-coding-studio/topics/backpressure/#agent-browser-the-rendered-page-as-ground-truth),

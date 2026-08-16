@@ -42,7 +42,17 @@ jobs:
         if: ${{ !github.event.repository.is_template }}
         run: pnpm check:evidence
       - name: Check internal links
-        run: pnpm dlx linkinator ./dist --silent
+        # dist/ has no comp4020-ass1-BilalM004/ subdirectory, but every asset
+        # URL Astro emits is prefixed with it (astro.config.mjs's base) --
+        # GitHub Pages resolves that prefix via its own routing when live, but
+        # linkinator serves dist/ flatly and 404s on it. A self-referencing
+        # symlink named after the base segment makes the flat directory
+        # resolve those URLs the same way Pages does, with no live server
+        # needed; it's discarded with the rest of this job's dist/, never
+        # part of the artifact the deploy job uploads.
+        run: |
+          ln -s . dist/comp4020-ass1-BilalM004
+          pnpm dlx linkinator ./dist --silent
       - name: Scan for committed secrets
         # Pinned, both halves: the SHA fixes the action's script, and `version`
         # fixes the scanner image, which otherwise floats on :latest. These two
