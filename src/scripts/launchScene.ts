@@ -1,3 +1,4 @@
+import mercuryTextureUrl from "../assets/textures/mercury.jpg";
 import earthTextureUrl from "../assets/textures/earth.jpg";
 import earthCloudsTextureUrl from "../assets/textures/earth_clouds.jpg";
 import venusTextureUrl from "../assets/textures/venus.jpg";
@@ -6,7 +7,7 @@ import jupiterTextureUrl from "../assets/textures/jupiter.jpg";
 import saturnTextureUrl from "../assets/textures/saturn.jpg";
 import saturnRingUrl from "../assets/textures/saturn_ring.png";
 import sunTextureUrl from "../assets/textures/sun.jpg";
-import { makeGlowTexture, makeMetalTexture, makeRingTextureFromStrip } from "./proceduralTextures";
+import { makeDotTexture, makeGlowTexture, makeMetalTexture, makeRingTextureFromStrip } from "./proceduralTextures";
 
 export interface LaunchRefs {
   ground: HTMLElement;
@@ -17,82 +18,138 @@ export interface LaunchRefs {
 
 type Vec3 = [number, number, number];
 
-interface WideStage {
-  mode: "wide";
+// A single continuous flight path: each keyframe pins the rocket's position
+// plus the camera's rocket-relative offset/look-at at that instant.
+// buildSegments() pairs consecutive keyframes into legs, so a leg's outgoing
+// camera values are always exactly the next leg's incoming ones -- camera
+// framing can never jump at a leg boundary, only ease continuously. This is
+// what replaces the old wide/chase "hard cut" between stages.
+interface Keyframe {
   caption: string;
-  duration: number;
-  camFrom: Vec3;
-  camTo: Vec3;
-  lookFrom: Vec3;
-  lookTo: Vec3;
-  rocketFrom: Vec3;
-  rocketTo: Vec3;
+  rocketPos: Vec3;
+  camOffset: Vec3;
+  lookAhead: Vec3;
 }
 
-interface ChaseStage {
-  mode: "chase";
+interface Segment {
   caption: string;
   duration: number;
   rocketFrom: Vec3;
   rocketTo: Vec3;
-  // Camera position/lookAt are the rocket's live position plus these eased
-  // offsets, so the shot follows the rocket instead of holding a fixed frame.
-  chaseOffsetFrom: Vec3;
-  chaseOffsetTo: Vec3;
+  camOffsetFrom: Vec3;
+  camOffsetTo: Vec3;
   lookAheadFrom: Vec3;
   lookAheadTo: Vec3;
 }
 
-type Stage = WideStage | ChaseStage;
+// World layout: Earth at the origin, Sun and inner planets (Mercury, Venus)
+// behind the launch point in +Z so the outbound flight (always Z <= 0) never
+// comes near the Sun. Mars, the asteroid belt, Jupiter and Saturn sit
+// progressively further along a single straight outbound line (rocketPos(s)
+// = base + s * direction for a fixed direction, so the path never changes
+// course) in the correct real-world distance-from-Sun order.
+//
+// The flight is two scenes, each with one constant, non-swinging camOffset/
+// lookAhead: a wide liftoff shot that keeps the Sun in view over the rocket's
+// shoulder while it climbs straight up, then a single trailing chase camera
+// for the entire straight-line flight past the planets -- no per-planet
+// camera aim, so nothing "swings" to frame any one body. The camera sits far
+// enough behind and looks far enough ahead that each planet's own sideways
+// clearance from the flight line still keeps it inside the (narrower, on
+// phone) field of view as the rocket passes it.
+// Y raised from the straight camera-to-rocket line so the sun (fixed in
+// world space, off to the side of Earth) doesn't sit almost exactly behind
+// Earth from the camera's viewpoint -- the original offset put the two
+// within ~2.6deg of each other, so Earth's near (unlit) hemisphere eclipsed
+// the sun instead of leaving it visible as its own disc in the sky. Verified
+// with /tmp/liftoff_search2.mjs: +7 on Y gives ~23.6deg of separation (versus
+// the ~16deg the two discs' angular radii need to clear each other) while the
+// sun stays inside both viewports' vertical FOV (its pitch, ~18deg, is well
+// under the 25deg half-FOV) and independent of aspect ratio, unlike yaw.
+const LIFTOFF_CAM_OFFSET: Vec3 = [-4.22, 0.67, -10.54];
+const LIFTOFF_LOOKAHEAD: Vec3 = [0, 0, 0];
+const FLIGHT_CAM_OFFSET: Vec3 = [-3.86, 0.04, 34.77];
+const FLIGHT_LOOKAHEAD: Vec3 = [4.64, 1.39, -41.72];
 
-// World layout: Earth at the origin, everything else placed along the
-// rocket's outbound path so the two chase stages fly close past them.
-const STAGES: Stage[] = [
+const KEYFRAMES: Keyframe[] = [
   {
-    mode: "wide",
     caption: "Leaving Earth",
-    duration: 3000,
-    camFrom: [0, 1.6, 4.8],
-    camTo: [0, 2.8, 6.5],
-    lookFrom: [0, 1, 0],
-    lookTo: [0, 2.2, 0],
-    rocketFrom: [0, 1.1, 0],
-    rocketTo: [0, 2.4, 0],
+    rocketPos: [0, 1.1, 0],
+    camOffset: LIFTOFF_CAM_OFFSET,
+    lookAhead: LIFTOFF_LOOKAHEAD,
   },
   {
-    mode: "chase",
-    caption: "Out into space",
-    duration: 3000,
-    rocketFrom: [0, 2.4, 0],
-    rocketTo: [5, 2, -20],
-    chaseOffsetFrom: [0, 1.3, 5.5],
-    chaseOffsetTo: [0, 0.9, 3.4],
-    lookAheadFrom: [0, 0, -6],
-    lookAheadTo: [2, 0, -10],
+    caption: "Climbing away from Earth",
+    rocketPos: [0, 2.6, 0],
+    camOffset: LIFTOFF_CAM_OFFSET,
+    lookAhead: LIFTOFF_LOOKAHEAD,
   },
   {
-    mode: "chase",
-    caption: "Past the solar system",
-    duration: 3000,
-    rocketFrom: [5, 2, -20],
-    rocketTo: [-9, 8, -80],
-    chaseOffsetFrom: [0, 1, 4],
-    chaseOffsetTo: [0, 2.5, 7],
-    lookAheadFrom: [-3, 1, -12],
-    lookAheadTo: [0, 1, -14],
+    caption: "Passing Mars",
+    rocketPos: [0, 2.6, 0],
+    camOffset: FLIGHT_CAM_OFFSET,
+    lookAhead: FLIGHT_LOOKAHEAD,
   },
   {
-    mode: "wide",
+    caption: "Through the asteroid belt",
+    rocketPos: [3.5, 3.65, -31.5],
+    camOffset: FLIGHT_CAM_OFFSET,
+    lookAhead: FLIGHT_LOOKAHEAD,
+  },
+  {
+    caption: "Jupiter's giant bulk",
+    rocketPos: [5.5, 4.25, -49.5],
+    camOffset: FLIGHT_CAM_OFFSET,
+    lookAhead: FLIGHT_LOOKAHEAD,
+  },
+  {
+    caption: "Saturn flyby",
+    rocketPos: [8, 5, -72],
+    camOffset: FLIGHT_CAM_OFFSET,
+    lookAhead: FLIGHT_LOOKAHEAD,
+  },
+  {
+    caption: "Out past Saturn",
+    rocketPos: [13.5, 6.65, -121.5],
+    camOffset: FLIGHT_CAM_OFFSET,
+    lookAhead: FLIGHT_LOOKAHEAD,
+  },
+  {
     caption: "Into empty space",
-    duration: 2500,
-    camFrom: [-9, 20, -40],
-    camTo: [-22, 55, -250],
-    lookFrom: [-9, 8, -80],
-    lookTo: [-16, 11, -170],
-    rocketFrom: [-9, 8, -80],
-    rocketTo: [-15, 11, -140],
+    rocketPos: [17, 7.7, -153],
+    camOffset: FLIGHT_CAM_OFFSET,
+    lookAhead: FLIGHT_LOOKAHEAD,
+  },
+  {
+    caption: "Into empty space",
+    rocketPos: [20, 8.6, -180],
+    camOffset: FLIGHT_CAM_OFFSET,
+    lookAhead: FLIGHT_LOOKAHEAD,
   },
 ];
+
+const LEG_DURATIONS = [1400, 1500, 2200, 1800, 2000, 2600, 1800, 2200];
+
+function buildSegments(keyframes: Keyframe[], durations: number[]): Segment[] {
+  const segments: Segment[] = [];
+  for (let i = 0; i < keyframes.length - 1; i += 1) {
+    const from = keyframes[i];
+    const to = keyframes[i + 1];
+    segments.push({
+      caption: from.caption,
+      duration: durations[i],
+      rocketFrom: from.rocketPos,
+      rocketTo: to.rocketPos,
+      camOffsetFrom: from.camOffset,
+      camOffsetTo: to.camOffset,
+      lookAheadFrom: from.lookAhead,
+      lookAheadTo: to.lookAhead,
+    });
+  }
+  return segments;
+}
+
+const SEGMENTS: Segment[] = buildSegments(KEYFRAMES, LEG_DURATIONS);
 
 const GROUND_WALK_MS = 2000;
 const GROUND_BOARD_MS = 1000;
@@ -112,7 +169,7 @@ function lerp(a: number, b: number, t: number): number {
 }
 
 interface SceneController {
-  renderPose(stageIndex: number, t: number): void;
+  renderPose(segmentIndex: number, t: number): void;
   handleResize(): void;
   dispose(): void;
 }
@@ -136,18 +193,19 @@ async function buildScene(
   const scene = new THREE.Scene();
 
   const loader = new THREE.TextureLoader();
-  const [earthTex, earthCloudsTex, sunTex, venusTex, marsTex, jupiterTex, saturnTex, saturnRingSource] =
+  const [earthTex, earthCloudsTex, sunTex, mercuryTex, venusTex, marsTex, jupiterTex, saturnTex, saturnRingSource] =
     await Promise.all([
       loader.loadAsync(earthTextureUrl.src),
       loader.loadAsync(earthCloudsTextureUrl.src),
       loader.loadAsync(sunTextureUrl.src),
+      loader.loadAsync(mercuryTextureUrl.src),
       loader.loadAsync(venusTextureUrl.src),
       loader.loadAsync(marsTextureUrl.src),
       loader.loadAsync(jupiterTextureUrl.src),
       loader.loadAsync(saturnTextureUrl.src),
       loader.loadAsync(saturnRingUrl.src),
     ]);
-  for (const tex of [earthTex, sunTex, venusTex, marsTex, jupiterTex, saturnTex]) {
+  for (const tex of [earthTex, sunTex, mercuryTex, venusTex, marsTex, jupiterTex, saturnTex]) {
     tex.colorSpace = THREE.SRGBColorSpace;
   }
 
@@ -226,7 +284,7 @@ async function buildScene(
   scene.add(rocket);
 
   const sun = new THREE.Mesh(new THREE.SphereGeometry(5.5, 24, 16), new THREE.MeshBasicMaterial({ map: sunTex }));
-  sun.position.set(0, 8, -60);
+  sun.position.set(6, 9, 15);
   scene.add(sun);
 
   const sunLight = new THREE.PointLight(0xfff2d0, 4, 0, 0);
@@ -248,13 +306,27 @@ async function buildScene(
   corona.position.copy(sun.position);
   scene.add(corona);
 
-  // Offset from the rocket's own waypoints (see STAGES) so the close chase
-  // camera passes beside each body instead of arriving exactly inside it.
+  // Real outward order from the Sun: Mercury, Venus, Earth, Mars, the
+  // asteroid belt (see the Points cloud below), Jupiter, Saturn -- Mercury
+  // and Venus sit behind the launch point (never visited close, same as the
+  // real inner planets relative to an outbound flight), the rest sit off to
+  // the side of the single straight flight line by just enough clearance for
+  // a close-but-clear pass while staying inside the camera's field of view
+  // (verified by script, including on a narrow phone aspect ratio).
   const planetSpecs: PlanetSpec[] = [
-    { radius: 0.85, position: [10, 5, -28], texture: venusTex },
-    { radius: 0.7, position: [-7, 3, -35], texture: marsTex },
-    { radius: 2.3, position: [9, -2, -50], texture: jupiterTex },
-    { radius: 1.8, position: [-16, 12, -92], texture: saturnTex, ring: true },
+    { radius: 0.5, position: [10, 8, 8], texture: mercuryTex },
+    { radius: 0.85, position: [8, 7, 3], texture: venusTex },
+    // Mars sits near Venus in world space rather than further down the flight
+    // line -- the chase camera trails ~35 units behind the rocket (see
+    // FLIGHT_CAM_OFFSET), so a planet placed at the rocket's own "Passing
+    // Mars" keyframe position isn't actually close to the CAMERA until a
+    // whole caption later. Placing Mars here instead means it's already
+    // growing large and on-screen while "Passing Mars" is showing, verified
+    // with /tmp/mars_fix2.mjs (angular diameter grows from ~2.5deg to ~7deg
+    // across the segment on desktop without ever going behind the camera).
+    { radius: 0.7, position: [3, 4, 4], texture: marsTex },
+    { radius: 2.3, position: [11.2, 3.5, -61.8], texture: jupiterTex },
+    { radius: 1.8, position: [8.4, 8.2, -109.2], texture: saturnTex, ring: true },
   ];
   for (const spec of planetSpecs) {
     const mesh = new THREE.Mesh(
@@ -280,6 +352,42 @@ async function buildScene(
       scene.add(ring);
     }
   }
+
+  // A lightweight asteroid-belt flourish between the Mars and Jupiter legs --
+  // a sparse ring of small grey points, not individual meshes, so it reads as
+  // rubble to fly through rather than another set of solid bodies to avoid.
+  // Centered directly on the flight line (not off to the side, unlike the
+  // planets) since it's meant to be flown through, not passed at a distance.
+  const beltCenter: Vec3 = [4.8, 4.04, -43.2];
+  const beltCount = 260;
+  const beltPositions = new Float32Array(beltCount * 3);
+  for (let i = 0; i < beltCount; i += 1) {
+    const angle = Math.random() * Math.PI * 2;
+    // Capped at 20 (not the ring's full 24 span) so the belt's footprint
+    // stops short of Jupiter, ~19.7 units from beltCenter -- otherwise
+    // stray points render on top of it during "Jupiter's giant bulk".
+    const ringRadius = 10 + Math.random() * 10;
+    const spread = (Math.random() - 0.5) * 6;
+    beltPositions[i * 3] = beltCenter[0] + Math.cos(angle) * ringRadius;
+    beltPositions[i * 3 + 1] = beltCenter[1] + spread;
+    beltPositions[i * 3 + 2] = beltCenter[2] + Math.sin(angle) * ringRadius;
+  }
+  const beltGeometry = new THREE.BufferGeometry();
+  beltGeometry.setAttribute("position", new THREE.BufferAttribute(beltPositions, 3));
+  const belt = new THREE.Points(
+    beltGeometry,
+    new THREE.PointsMaterial({
+      color: 0x8a7f6b,
+      // Small enough to read as dust motes, not blobs comparable in size to
+      // Mercury (radius 0.5) -- 0.6 rendered as oversized blurry circles.
+      size: 0.15,
+      sizeAttenuation: true,
+      map: makeDotTexture(THREE),
+      transparent: true,
+      depthWrite: false,
+    }),
+  );
+  scene.add(belt);
 
   const starCount = 2000;
   const starPositions = new Float32Array(starCount * 3);
@@ -311,50 +419,41 @@ async function buildScene(
   const upAxis = new THREE.Vector3(0, 1, 0);
   const heading = new THREE.Vector3();
 
-  function renderPose(stageIndex: number, t: number): void {
-    const stage = STAGES[stageIndex] ?? STAGES[STAGES.length - 1];
+  function renderPose(segmentIndex: number, t: number): void {
+    const segment = SEGMENTS[segmentIndex] ?? SEGMENTS[SEGMENTS.length - 1];
     const eased = easeInOutCubic(t);
 
     const rocketPos: Vec3 = [
-      lerp(stage.rocketFrom[0], stage.rocketTo[0], eased),
-      lerp(stage.rocketFrom[1], stage.rocketTo[1], eased),
-      lerp(stage.rocketFrom[2], stage.rocketTo[2], eased),
+      lerp(segment.rocketFrom[0], segment.rocketTo[0], eased),
+      lerp(segment.rocketFrom[1], segment.rocketTo[1], eased),
+      lerp(segment.rocketFrom[2], segment.rocketTo[2], eased),
     ];
     rocket.position.set(...rocketPos);
 
     heading.set(
-      stage.rocketTo[0] - stage.rocketFrom[0],
-      stage.rocketTo[1] - stage.rocketFrom[1],
-      stage.rocketTo[2] - stage.rocketFrom[2],
+      segment.rocketTo[0] - segment.rocketFrom[0],
+      segment.rocketTo[1] - segment.rocketFrom[1],
+      segment.rocketTo[2] - segment.rocketFrom[2],
     );
     if (heading.lengthSq() > 0.0001) {
       rocket.quaternion.setFromUnitVectors(upAxis, heading.normalize());
     }
-    flame.visible = stageIndex === 0;
+    flame.visible = segmentIndex <= 1;
 
-    if (stage.mode === "wide") {
-      camera.position.set(
-        lerp(stage.camFrom[0], stage.camTo[0], eased),
-        lerp(stage.camFrom[1], stage.camTo[1], eased),
-        lerp(stage.camFrom[2], stage.camTo[2], eased),
-      );
-      camera.lookAt(
-        lerp(stage.lookFrom[0], stage.lookTo[0], eased),
-        lerp(stage.lookFrom[1], stage.lookTo[1], eased),
-        lerp(stage.lookFrom[2], stage.lookTo[2], eased),
-      );
-    } else {
-      camera.position.set(
-        rocketPos[0] + lerp(stage.chaseOffsetFrom[0], stage.chaseOffsetTo[0], eased),
-        rocketPos[1] + lerp(stage.chaseOffsetFrom[1], stage.chaseOffsetTo[1], eased),
-        rocketPos[2] + lerp(stage.chaseOffsetFrom[2], stage.chaseOffsetTo[2], eased),
-      );
-      camera.lookAt(
-        rocketPos[0] + lerp(stage.lookAheadFrom[0], stage.lookAheadTo[0], eased),
-        rocketPos[1] + lerp(stage.lookAheadFrom[1], stage.lookAheadTo[1], eased),
-        rocketPos[2] + lerp(stage.lookAheadFrom[2], stage.lookAheadTo[2], eased),
-      );
-    }
+    // Camera is always the rocket's own position plus an eased offset/look-at
+    // -- one formula for the whole flight, so there's no mode boundary left
+    // to cut across (see buildSegments(): adjacent legs share their offset
+    // values by construction, so this is continuous everywhere).
+    camera.position.set(
+      rocketPos[0] + lerp(segment.camOffsetFrom[0], segment.camOffsetTo[0], eased),
+      rocketPos[1] + lerp(segment.camOffsetFrom[1], segment.camOffsetTo[1], eased),
+      rocketPos[2] + lerp(segment.camOffsetFrom[2], segment.camOffsetTo[2], eased),
+    );
+    camera.lookAt(
+      rocketPos[0] + lerp(segment.lookAheadFrom[0], segment.lookAheadTo[0], eased),
+      rocketPos[1] + lerp(segment.lookAheadFrom[1], segment.lookAheadTo[1], eased),
+      rocketPos[2] + lerp(segment.lookAheadFrom[2], segment.lookAheadTo[2], eased),
+    );
 
     renderer.render(scene, camera);
   }
@@ -504,36 +603,36 @@ async function ensureScene(sequence: ActiveSequence): Promise<SceneController> {
 function finishWithoutScene(sequence: ActiveSequence, error: unknown): void {
   console.error("Launch sequence: space scene failed to load, skipping to the end.", error);
   sequence.refs.ground.hidden = true;
-  sequence.refs.caption.textContent = STAGES[STAGES.length - 1].caption;
+  sequence.refs.caption.textContent = SEGMENTS[SEGMENTS.length - 1].caption;
   finishSequence(sequence);
 }
 
 function runSpaceCutscene(sequence: ActiveSequence, scene: SceneController): void {
-  let stageIndex = 0;
-  let stageElapsed = 0;
+  let segmentIndex = 0;
+  let segmentElapsed = 0;
   let lastTs = 0;
-  sequence.refs.caption.textContent = STAGES[0].caption;
+  sequence.refs.caption.textContent = SEGMENTS[0].caption;
 
   function tick(ts: number): void {
     if (active !== sequence) return;
     if (lastTs === 0) lastTs = ts;
     const delta = Math.min(ts - lastTs, 100);
     lastTs = ts;
-    stageElapsed += delta;
+    segmentElapsed += delta;
 
-    let stage = STAGES[stageIndex];
-    while (stageElapsed >= stage.duration && stageIndex < STAGES.length - 1) {
-      stageElapsed -= stage.duration;
-      stageIndex += 1;
-      stage = STAGES[stageIndex];
-      sequence.refs.caption.textContent = stage.caption;
+    let segment = SEGMENTS[segmentIndex];
+    while (segmentElapsed >= segment.duration && segmentIndex < SEGMENTS.length - 1) {
+      segmentElapsed -= segment.duration;
+      segmentIndex += 1;
+      segment = SEGMENTS[segmentIndex];
+      sequence.refs.caption.textContent = segment.caption;
     }
 
-    const isLast = stageIndex === STAGES.length - 1;
-    const t = isLast ? Math.min(stageElapsed / stage.duration, 1) : stageElapsed / stage.duration;
-    scene.renderPose(stageIndex, t);
+    const isLast = segmentIndex === SEGMENTS.length - 1;
+    const t = isLast ? Math.min(segmentElapsed / segment.duration, 1) : segmentElapsed / segment.duration;
+    scene.renderPose(segmentIndex, t);
 
-    if (isLast && stageElapsed >= stage.duration) {
+    if (isLast && segmentElapsed >= segment.duration) {
       finishSequence(sequence);
       return;
     }
@@ -609,8 +708,8 @@ export function startLaunchSequence(refs: LaunchRefs): void {
       (scene) => {
         if (active !== sequence) return;
         refs.canvas.classList.add("is-visible");
-        scene.renderPose(STAGES.length - 1, 1);
-        refs.caption.textContent = STAGES[STAGES.length - 1].caption;
+        scene.renderPose(SEGMENTS.length - 1, 1);
+        refs.caption.textContent = SEGMENTS[SEGMENTS.length - 1].caption;
         finishSequence(sequence);
       },
       (error: unknown) => {
@@ -635,8 +734,8 @@ export function skipLaunchSequence(): void {
   void ensureScene(sequence).then(
     (scene) => {
       if (active !== sequence) return;
-      scene.renderPose(STAGES.length - 1, 1);
-      sequence.refs.caption.textContent = STAGES[STAGES.length - 1].caption;
+      scene.renderPose(SEGMENTS.length - 1, 1);
+      sequence.refs.caption.textContent = SEGMENTS[SEGMENTS.length - 1].caption;
       finishSequence(sequence);
     },
     (error: unknown) => {

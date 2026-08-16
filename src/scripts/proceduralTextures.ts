@@ -70,6 +70,23 @@ export function makeRingTextureFromStrip(
   return new THREE.CanvasTexture(canvas);
 }
 
+// PointsMaterial renders each point as a hard-edged square when it has no
+// `map` -- a soft round alpha dot instead reads as dust/rubble rather than
+// flat debris tiles (used by the asteroid belt in launchScene.ts).
+export function makeDotTexture(THREE: typeof import("three")): InstanceType<typeof THREE.CanvasTexture> {
+  const canvas = document.createElement("canvas");
+  canvas.width = 32;
+  canvas.height = 32;
+  const ctx = canvas.getContext("2d")!;
+  const gradient = ctx.createRadialGradient(16, 16, 0, 16, 16, 16);
+  gradient.addColorStop(0, "rgba(255, 255, 255, 1)");
+  gradient.addColorStop(0.6, "rgba(255, 255, 255, 0.6)");
+  gradient.addColorStop(1, "rgba(255, 255, 255, 0)");
+  ctx.fillStyle = gradient;
+  ctx.fillRect(0, 0, canvas.width, canvas.height);
+  return new THREE.CanvasTexture(canvas);
+}
+
 export function makeGlowTexture(THREE: typeof import("three")): InstanceType<typeof THREE.CanvasTexture> {
   const canvas = document.createElement("canvas");
   canvas.width = 128;
