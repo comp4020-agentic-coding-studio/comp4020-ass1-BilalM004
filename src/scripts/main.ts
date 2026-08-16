@@ -1,3 +1,4 @@
+import { renderExplainScreen } from "./explainScreen";
 import { skipLaunchSequence, startLaunchSequence, stopLaunchSequence } from "./launchScene";
 import { initMusicWidget } from "./musicWidget";
 import { bringTwinsHome, startSplitScreen, stopSplitScreen, type BringHomeResult } from "./splitScreen";
@@ -37,7 +38,14 @@ document.querySelector("#choice-button")?.addEventListener("click", () => {
   showScreen("choice");
 });
 
+// Set by handleSplitScreenFinished and read by the reunion screen's "why did
+// this happen?" button -- the explanation screen needs the chosen velocity,
+// which isn't part of the reunion DOM it's populating at that point.
+let lastBringHomeResult: BringHomeResult | null = null;
+
 function handleSplitScreenFinished(result: BringHomeResult): void {
+  lastBringHomeResult = result;
+
   const earthTwin = document.querySelector<HTMLElement>("#reunion-earth-twin");
   const shipTwin = document.querySelector<HTMLElement>("#reunion-ship-twin");
   const ages = document.querySelector<HTMLElement>("#reunion-ages");
@@ -46,8 +54,22 @@ function handleSplitScreenFinished(result: BringHomeResult): void {
   if (ages) {
     ages.textContent = `Earth: ${result.earthYears.toFixed(1)} years — Ship: ${result.shipYears.toFixed(1)} years`;
   }
+
   showScreen("reunion");
 }
+
+document.querySelector("#reunion-explain-button")?.addEventListener("click", () => {
+  if (!lastBringHomeResult) return;
+
+  const path = document.querySelector<SVGPathElement>("#explain-gamma-path");
+  const point = document.querySelector<SVGCircleElement>("#explain-gamma-point");
+  const caption = document.querySelector<HTMLElement>("#explain-gamma-caption");
+  if (path && point && caption) {
+    renderExplainScreen({ path, point, caption }, lastBringHomeResult.velocity);
+  }
+
+  showScreen("explain");
+});
 
 document.querySelector("#special-relativity-button")?.addEventListener("click", () => {
   showScreen("launch");

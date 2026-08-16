@@ -5,6 +5,7 @@ import {
   AGE_STAGE_THRESHOLD_YEARS,
   describeLorentzFormula,
   describeTimeDilationRatio,
+  gammaCurvePoints,
   lorentzFactor,
   MAX_VELOCITY_FRACTION,
 } from "../src/scripts/physics";
@@ -112,5 +113,30 @@ describe("describeLorentzFormula", () => {
   it("clamps the substituted velocity to the cap", () => {
     const formula = describeLorentzFormula(1.5);
     expect(formula).toContain(MAX_VELOCITY_FRACTION.toFixed(4));
+  });
+});
+
+describe("gammaCurvePoints", () => {
+  it("starts at v=0, gamma=1", () => {
+    const points = gammaCurvePoints();
+    expect(points[0]).toEqual({ v: 0, gamma: 1 });
+  });
+
+  it("ends at the velocity cap", () => {
+    const points = gammaCurvePoints();
+    expect(points[points.length - 1].v).toBe(MAX_VELOCITY_FRACTION);
+    expect(points[points.length - 1].gamma).toBeCloseTo(lorentzFactor(MAX_VELOCITY_FRACTION), 6);
+  });
+
+  it("is monotonically increasing in both v and gamma", () => {
+    const points = gammaCurvePoints();
+    for (let i = 1; i < points.length; i += 1) {
+      expect(points[i].v).toBeGreaterThan(points[i - 1].v);
+      expect(points[i].gamma).toBeGreaterThan(points[i - 1].gamma);
+    }
+  });
+
+  it("respects a custom step count", () => {
+    expect(gammaCurvePoints(10)).toHaveLength(11);
   });
 });

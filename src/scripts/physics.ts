@@ -61,3 +61,20 @@ export function describeLorentzFormula(v: number): string {
   const gamma = lorentzFactor(clamped);
   return `γ = 1 / √(1 − v²/c²) = 1 / √(1 − ${clamped.toFixed(4)}²) = ${formatGamma(gamma)}`;
 }
+
+export interface GammaCurvePoint {
+  v: number;
+  gamma: number;
+}
+
+// Evenly-sampled points along the gamma curve from v=0 to the velocity cap,
+// for drawing the explanation screen's graph. Pure/no DOM, like the rest of
+// this file, so the graph-drawing code just maps these to screen coordinates.
+export function gammaCurvePoints(steps = 60): GammaCurvePoint[] {
+  const points: GammaCurvePoint[] = [];
+  for (let i = 0; i <= steps; i += 1) {
+    const v = (i / steps) * MAX_VELOCITY_FRACTION;
+    points.push({ v, gamma: lorentzFactor(v) });
+  }
+  return points;
+}

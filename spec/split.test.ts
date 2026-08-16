@@ -81,6 +81,45 @@ describe("split screen", () => {
   });
 });
 
+describe("explanation screen", () => {
+  it("is hidden by default", () => {
+    const explain = doc.querySelector('[data-screen="explain"]');
+    expect(explain).toBeTruthy();
+    expect(explain?.hasAttribute("hidden")).toBe(true);
+  });
+
+  it("comes after both the split screen and the reunion in document order", () => {
+    const screens = [...doc.querySelectorAll("[data-screen]")].map((el) => el.getAttribute("data-screen"));
+    expect(screens.indexOf("explain")).toBeGreaterThan(screens.indexOf("split"));
+    expect(screens.indexOf("explain")).toBeGreaterThan(screens.indexOf("reunion"));
+  });
+
+  it("has an accessible graph with a title and description", () => {
+    const svg = doc.querySelector(".screen-explain svg");
+    expect(svg?.getAttribute("role")).toBe("img");
+    const titleId = svg?.getAttribute("aria-labelledby")?.split(" ")[0];
+    const title = doc.getElementById(titleId ?? "");
+    expect(title?.textContent?.trim()).not.toBe("");
+  });
+
+  it("has a restart control back to the start screen", () => {
+    const explain = doc.querySelector('[data-screen="explain"]');
+    const restart = explain?.querySelector('[data-action="restart"]');
+    expect(restart).toBeTruthy();
+  });
+
+  it("has a non-empty written explanation", () => {
+    const text = doc.querySelector(".explain-text");
+    expect(text?.textContent?.trim().length).toBeGreaterThan(40);
+  });
+
+  it("credits the real-world muon example to its source", () => {
+    const credit = doc.querySelector(".explain-credit a");
+    expect(credit?.getAttribute("href")).toBe("https://www.energy.gov/science/doe-explainsrelativity");
+    expect(credit?.textContent?.trim().length).toBeGreaterThan(0);
+  });
+});
+
 describe("reunion screen", () => {
   it("is hidden by default", () => {
     const reunion = doc.querySelector('[data-screen="reunion"]');
@@ -99,6 +138,12 @@ describe("reunion screen", () => {
     const reunion = doc.querySelector('[data-screen="reunion"]');
     const restart = reunion?.querySelector('[data-action="restart"]');
     expect(restart).toBeTruthy();
+  });
+
+  it("has a reachable, labelled button through to the explanation screen", () => {
+    const button = doc.querySelector("#reunion-explain-button");
+    expect(button?.tagName).toBe("BUTTON");
+    expect(button?.textContent?.trim()).not.toBe("");
   });
 });
 

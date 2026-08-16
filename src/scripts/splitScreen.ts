@@ -12,6 +12,7 @@ export interface BringHomeResult {
   shipYears: number;
   earthStage: AgeStage;
   shipStage: AgeStage;
+  velocity: number;
 }
 
 export interface SplitScreenRefs {
@@ -280,6 +281,7 @@ export function bringTwinsHome(): void {
     shipYears: sim.shipYears,
     earthStage: sim.earthStage,
     shipStage: sim.shipStage,
+    velocity: sim.velocity,
   };
 
   let settled = false;

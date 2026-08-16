@@ -889,6 +889,70 @@ h2:focus-visible {
   }
 }
 
+/* Explanation screen */
+.explain-text {
+  max-width: 34rem;
+  color: #c7c9d9;
+}
+
+.explain-graph {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 100%;
+  max-width: 22rem;
+  margin: 0;
+}
+
+.explain-graph svg {
+  width: 100%;
+  height: auto;
+}
+
+.explain-axis {
+  stroke: #4a4f66;
+  stroke-width: 1;
+}
+
+.explain-axis-label,
+.explain-axis-title {
+  font-size: 9px;
+  fill: #c7c9d9;
+}
+
+.explain-gamma-path {
+  fill: none;
+  stroke: #8ab4ff;
+  stroke-width: 2;
+  stroke-linecap: round;
+}
+
+.explain-gamma-point {
+  fill: #ffd166;
+  stroke: #000;
+  stroke-width: 1;
+}
+
+.explain-gamma-caption {
+  max-width: 26rem;
+  margin: 0.5rem 0 0;
+  font-size: 0.95rem;
+  color: #f4f4f8;
+}
+
+.explain-aside {
+  max-width: 30rem;
+  margin: 0;
+  font-size: 0.85rem;
+  color: #c7c9d9;
+}
+
+.explain-credit {
+  margin: 0;
+  font-size: 0.7rem;
+  color: rgb(199 201 217 / 60%);
+}
+
 /* Reunion */
 .reunion-twins {
   display: flex;

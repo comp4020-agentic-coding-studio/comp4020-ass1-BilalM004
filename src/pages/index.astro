@@ -143,6 +143,53 @@ const stars = Array.from({ length: STAR_COUNT }, () => ({
         </div>
         <p class="reunion-ages" id="reunion-ages">Earth: 0.0 years — Ship: 0.0 years</p>
         <p class="reunion-line">Teleported home instantly — no return trip, no extra time lost.</p>
+        <button id="reunion-explain-button" class="start-button" type="button">Why did this happen?</button>
+        <a href="#screen-start" class="start-button" data-action="restart">Start over</a>
+      </section>
+
+      <section id="screen-explain" class="screen screen-explain" data-screen="explain" hidden>
+        <h2 tabindex="-1">Why did they age differently?</h2>
+        <p class="explain-text">
+          Speed doesn't just carry you through space — it also slows your passage through time. The
+          faster the ship travelled, the further its clock fell behind Earth's. That's not a delay in
+          the signal or a trick of perspective: close to the speed of light, time itself runs slower
+          for the traveller.
+        </p>
+        <figure class="explain-graph">
+          <svg viewBox="0 0 320 200" role="img" aria-labelledby="explain-graph-title explain-graph-desc">
+            <title id="explain-graph-title">Time dilation versus ship speed</title>
+            <desc id="explain-graph-desc">
+              A curve showing the time dilation factor gamma rising with ship speed: it stays near 1 at
+              low speed, then climbs steeply as speed approaches the speed of light. A marker shows the
+              speed you chose.
+            </desc>
+            <line class="explain-axis" x1="40" y1="10" x2="40" y2="170" />
+            <line class="explain-axis" x1="40" y1="170" x2="300" y2="170" />
+            <text class="explain-axis-label" x="40" y="188">0</text>
+            <text class="explain-axis-label" x="300" y="188" text-anchor="end">≈c</text>
+            <text class="explain-axis-label" x="34" y="174" text-anchor="end">1</text>
+            <text class="explain-axis-label" x="34" y="16" text-anchor="end">≈71</text>
+            <text class="explain-axis-title" x="170" y="198" text-anchor="middle">Ship speed</text>
+            <text class="explain-axis-title" x="14" y="90" text-anchor="middle" transform="rotate(-90 14 90)"
+              >γ</text
+            >
+            <path id="explain-gamma-path" class="explain-gamma-path" />
+            <circle id="explain-gamma-point" class="explain-gamma-point" r="5" cx="40" cy="170" />
+          </svg>
+          <figcaption id="explain-gamma-caption" class="explain-gamma-caption"></figcaption>
+        </figure>
+        <p class="explain-aside">
+          This isn't just a thought experiment: cosmic-ray muons decay in about 2.2 microseconds — only
+          enough time to travel ~0.4 miles — but moving near light speed stretches that to ~90
+          microseconds from Earth's point of view, long enough to cover the ~16 miles to the ground.
+          That's why we detect them at all.
+        </p>
+        <p class="explain-credit">
+          Muon example:
+          <a href="https://www.energy.gov/science/doe-explainsrelativity" target="_blank" rel="noopener"
+            >U.S. Department of Energy, "DOE Explains...Relativity"</a
+          >
+        </p>
         <a href="#screen-start" class="start-button" data-action="restart">Start over</a>
       </section>
     </main>
