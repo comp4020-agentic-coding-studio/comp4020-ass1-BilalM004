@@ -26,9 +26,9 @@ window.matchMedia = (query: string) =>
     dispatchEvent: () => false,
   }) as MediaQueryList;
 
-// Must match the caption on the last entry of STAGES in launchScene.ts --
-// that stage isn't exported, so this is asserted against by value.
-const FINAL_CAPTION = "Into empty space";
+// Must match FINAL_CAPTION in launchScene.ts -- that constant isn't
+// exported, so this is asserted against by value.
+const FINAL_CAPTION = "Farther still, into empty space";
 
 function makeRefs() {
   return {

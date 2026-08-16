@@ -27,6 +27,12 @@ type Vec3 = [number, number, number];
 // what replaces the old wide/chase "hard cut" between stages.
 interface Keyframe {
   caption: string;
+  // Shown partway through the leg that STARTS at this keyframe, replacing
+  // `caption` without waiting for the leg to finish -- lets the on-screen
+  // text move on mid-flight while the camera keeps easing through a single
+  // uninterrupted leg, instead of adding another keyframe (and therefore
+  // another decelerate/accelerate "stop") just to change the words.
+  lateCaption?: string;
   rocketPos: Vec3;
   camOffset: Vec3;
   lookAhead: Vec3;
@@ -34,6 +40,7 @@ interface Keyframe {
 
 interface Segment {
   caption: string;
+  lateCaption?: string;
   duration: number;
   rocketFrom: Vec3;
   rocketTo: Vec3;
@@ -58,6 +65,17 @@ interface Segment {
 // enough behind and looks far enough ahead that each planet's own sideways
 // clearance from the flight line still keeps it inside the (narrower, on
 // phone) field of view as the rocket passes it.
+//
+// The flight-past-the-planets stretch is ONE leg, not one per planet -- each
+// keyframe boundary re-triggers easeInOutCubic, so a keyframe at every planet
+// meant the rocket visibly decelerated and re-accelerated at each one, i.e.
+// a series of "stops" rather than one flight. The planets themselves don't
+// move with the keyframes (they're fixed in world space, see planetSpecs
+// below), so removing the intermediate waypoints only smooths the pacing --
+// the same planets still pass by in the same places. The on-screen caption
+// still gets to change mid-leg via `lateCaption` instead, so the text can
+// move from "outer space" on to "empty space" without adding another
+// deceleration to do it.
 // Y raised from the straight camera-to-rocket line so the sun (fixed in
 // world space, off to the side of Earth) doesn't sit almost exactly behind
 // Earth from the camera's viewpoint -- the original offset put the two
@@ -86,50 +104,29 @@ const KEYFRAMES: Keyframe[] = [
     lookAhead: LIFTOFF_LOOKAHEAD,
   },
   {
-    caption: "Passing Mars",
+    caption: "Flying into outer space",
+    lateCaption: "Farther still, into empty space",
     rocketPos: [0, 2.6, 0],
     camOffset: FLIGHT_CAM_OFFSET,
     lookAhead: FLIGHT_LOOKAHEAD,
   },
   {
-    caption: "Through the asteroid belt",
-    rocketPos: [3.5, 3.65, -31.5],
-    camOffset: FLIGHT_CAM_OFFSET,
-    lookAhead: FLIGHT_LOOKAHEAD,
-  },
-  {
-    caption: "Jupiter's giant bulk",
-    rocketPos: [5.5, 4.25, -49.5],
-    camOffset: FLIGHT_CAM_OFFSET,
-    lookAhead: FLIGHT_LOOKAHEAD,
-  },
-  {
-    caption: "Saturn flyby",
-    rocketPos: [8, 5, -72],
-    camOffset: FLIGHT_CAM_OFFSET,
-    lookAhead: FLIGHT_LOOKAHEAD,
-  },
-  {
-    caption: "Out past Saturn",
-    rocketPos: [13.5, 6.65, -121.5],
-    camOffset: FLIGHT_CAM_OFFSET,
-    lookAhead: FLIGHT_LOOKAHEAD,
-  },
-  {
-    caption: "Into empty space",
-    rocketPos: [17, 7.7, -153],
-    camOffset: FLIGHT_CAM_OFFSET,
-    lookAhead: FLIGHT_LOOKAHEAD,
-  },
-  {
-    caption: "Into empty space",
+    // Terminal keyframe: its rocketPos/camOffset/lookAhead are the arrival
+    // point of the final leg, but no leg starts here, so this caption is
+    // never shown as a segment's own -- see lateCaption above for the text
+    // that actually appears once the flight arrives.
+    caption: "Farther still, into empty space",
     rocketPos: [20, 8.6, -180],
     camOffset: FLIGHT_CAM_OFFSET,
     lookAhead: FLIGHT_LOOKAHEAD,
   },
 ];
 
-const LEG_DURATIONS = [1400, 1500, 2200, 1800, 2000, 2600, 1800, 2200];
+// Sums to the same total flight time the six separate planet-flyby legs used
+// to add up to (2200+1800+2000+2600+1800+2200) -- the trip still takes as
+// long, it just isn't broken into a decelerate/re-accelerate at every planet.
+const LEG_DURATIONS = [1400, 1500, 12600];
+const LATE_CAPTION_AT = 0.55;
 
 function buildSegments(keyframes: Keyframe[], durations: number[]): Segment[] {
   const segments: Segment[] = [];
@@ -138,6 +135,7 @@ function buildSegments(keyframes: Keyframe[], durations: number[]): Segment[] {
     const to = keyframes[i + 1];
     segments.push({
       caption: from.caption,
+      lateCaption: from.lateCaption,
       duration: durations[i],
       rocketFrom: from.rocketPos,
       rocketTo: to.rocketPos,
@@ -151,6 +149,12 @@ function buildSegments(keyframes: Keyframe[], durations: number[]): Segment[] {
 }
 
 const SEGMENTS: Segment[] = buildSegments(KEYFRAMES, LEG_DURATIONS);
+
+// The resting/skip-to-end state is past the last segment's lateCaption
+// switch (see LATE_CAPTION_AT), so it must show that text, not the segment's
+// starting caption -- otherwise skipping the cutscene would show "Flying
+// into outer space" even though the rocket has already arrived.
+const FINAL_CAPTION = SEGMENTS[SEGMENTS.length - 1].lateCaption ?? SEGMENTS[SEGMENTS.length - 1].caption;
 
 const GROUND_WALK_MS = 2000;
 const GROUND_BOARD_MS = 1000;
@@ -623,7 +627,7 @@ async function ensureScene(sequence: ActiveSequence): Promise<SceneController> {
 function finishWithoutScene(sequence: ActiveSequence, error: unknown): void {
   console.error("Launch sequence: space scene failed to load, skipping to the end.", error);
   sequence.refs.ground.hidden = true;
-  sequence.refs.caption.textContent = SEGMENTS[SEGMENTS.length - 1].caption;
+  sequence.refs.caption.textContent = FINAL_CAPTION;
   finishSequence(sequence);
 }
 
@@ -650,6 +654,9 @@ function runSpaceCutscene(sequence: ActiveSequence, scene: SceneController): voi
 
     const isLast = segmentIndex === SEGMENTS.length - 1;
     const t = isLast ? Math.min(segmentElapsed / segment.duration, 1) : segmentElapsed / segment.duration;
+    if (segment.lateCaption && t >= LATE_CAPTION_AT) {
+      sequence.refs.caption.textContent = segment.lateCaption;
+    }
     scene.renderPose(segmentIndex, t);
 
     if (isLast && segmentElapsed >= segment.duration) {
@@ -730,7 +737,7 @@ export function startLaunchSequence(refs: LaunchRefs): void {
         if (active !== sequence) return;
         refs.canvas.classList.add("is-visible");
         scene.renderPose(SEGMENTS.length - 1, 1);
-        refs.caption.textContent = SEGMENTS[SEGMENTS.length - 1].caption;
+        refs.caption.textContent = FINAL_CAPTION;
         finishSequence(sequence);
       },
       (error: unknown) => {
@@ -756,7 +763,7 @@ export function skipLaunchSequence(): void {
     (scene) => {
       if (active !== sequence) return;
       scene.renderPose(SEGMENTS.length - 1, 1);
-      sequence.refs.caption.textContent = SEGMENTS[SEGMENTS.length - 1].caption;
+      sequence.refs.caption.textContent = FINAL_CAPTION;
       finishSequence(sequence);
     },
     (error: unknown) => {

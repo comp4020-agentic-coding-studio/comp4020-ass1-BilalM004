@@ -137,7 +137,7 @@ window.matchMedia = (query: string) =>
     dispatchEvent: () => false,
   }) as MediaQueryList;
 
-const FINAL_CAPTION = "Into empty space";
+const FINAL_CAPTION = "Farther still, into empty space";
 
 function makeRefs() {
   return {
