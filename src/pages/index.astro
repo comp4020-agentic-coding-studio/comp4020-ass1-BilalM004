@@ -43,6 +43,12 @@ const stars = Array.from({ length: STAR_COUNT }, () => ({
             <span class="progress-label">Start</span>
           </button>
         </li>
+        <li class="progress-step" data-step="twins" data-state="upcoming">
+          <button type="button" class="progress-step-button" data-step="twins">
+            <span class="progress-dot" aria-hidden="true"></span>
+            <span class="progress-label">Twins</span>
+          </button>
+        </li>
         <li class="progress-step" data-step="choice" data-state="upcoming">
           <button type="button" class="progress-step-button" data-step="choice">
             <span class="progress-dot" aria-hidden="true"></span>
@@ -125,6 +131,7 @@ const stars = Array.from({ length: STAR_COUNT }, () => ({
             <div class="split-sky" aria-hidden="true"></div>
             <div class="split-ground" aria-hidden="true"></div>
             <p class="split-age-counter" id="split-earth-age">Earth: 0.0 years</p>
+            <p class="split-age-tag" id="split-earth-age-tag">Age: 25</p>
             <TwinCharacter label="The twin who stays" shirtColor="#8ab4ff" id="split-earth-twin" />
           </div>
           <div class="split-pane split-pane-ship" data-age-stage="young" id="split-ship-pane">
@@ -132,6 +139,7 @@ const stars = Array.from({ length: STAR_COUNT }, () => ({
               <div class="split-star-streak" id="split-star-streak"></div>
             </div>
             <p class="split-age-counter" id="split-ship-age">Ship: 0.0 years</p>
+            <p class="split-age-tag" id="split-ship-age-tag">Age: 25</p>
             <TwinCharacter label="The twin who goes" suited id="split-ship-twin" />
           </div>
         </div>
@@ -225,11 +233,18 @@ const stars = Array.from({ length: STAR_COUNT }, () => ({
 
       <section id="screen-reunion" class="screen" data-screen="reunion" hidden>
         <h2 tabindex="-1">Reunited</h2>
+        <p class="reunion-age-note">Both twins started this trip at age 25.</p>
         <div class="reunion-twins">
-          <TwinCharacter label="The twin who stays" shirtColor="#8ab4ff" id="reunion-earth-twin" />
-          <TwinCharacter label="The twin who goes" suited id="reunion-ship-twin" />
+          <div class="reunion-twin-block">
+            <p class="reunion-age-tag" id="reunion-earth-age-tag">Age: 25</p>
+            <TwinCharacter label="The twin who stays" shirtColor="#8ab4ff" id="reunion-earth-twin" />
+          </div>
+          <div class="reunion-twin-block">
+            <p class="reunion-age-tag" id="reunion-ship-age-tag">Age: 25</p>
+            <TwinCharacter label="The twin who goes" suited id="reunion-ship-twin" />
+          </div>
         </div>
-        <p class="reunion-ages" id="reunion-ages">Earth: 0.0 years — Ship: 0.0 years</p>
+        <p class="reunion-ages" id="reunion-ages">Time passed — Earth: 0.0 years — Ship: 0.0 years</p>
         <p class="reunion-line">Teleported home instantly — no return trip, no extra time lost.</p>
         <button id="reunion-explain-button" class="start-button" type="button">Why did this happen?</button>
         <a href="#screen-split" class="secondary-button" data-action="try-again">Try new values</a>

@@ -21,6 +21,8 @@ export interface SplitScreenRefs {
   shipPane: HTMLElement;
   earthAge: HTMLElement;
   shipAge: HTMLElement;
+  earthAgeTag: HTMLElement;
+  shipAgeTag: HTMLElement;
   earthTwin: HTMLElement;
   shipTwin: HTMLElement;
   formula: HTMLElement;
@@ -37,6 +39,12 @@ export interface SplitScreenRefs {
 
 const ANNOUNCE_INTERVAL_MS = 4000;
 const FLASH_FALLBACK_MS = 900;
+
+// Both twins are 25 when the story starts -- shown alongside the elapsed-years
+// counters as a running "Age: N" tag so the reader can see them grow older,
+// not just the raw years apart. Exported so the reunion screen (main.ts) can
+// compute each twin's final age from the same starting point.
+export const STARTING_AGE = 25;
 
 interface ActiveSim {
   refs: SplitScreenRefs;
@@ -104,6 +112,8 @@ function updateBringHomeReadiness(sim: ActiveSim): void {
 function render(sim: ActiveSim): void {
   sim.refs.earthAge.textContent = `Earth: ${formatYears(sim.earthYears)} years`;
   sim.refs.shipAge.textContent = `Ship: ${formatYears(sim.shipYears)} years`;
+  sim.refs.earthAgeTag.textContent = `Age: ${formatYears(STARTING_AGE + sim.earthYears)}`;
+  sim.refs.shipAgeTag.textContent = `Age: ${formatYears(STARTING_AGE + sim.shipYears)}`;
   const { velocity, gamma } = describeLorentzFormulaParts(sim.velocity);
   sim.refs.formula.innerHTML =
     `γ = 1 / √(1 − <span class="split-formula-v">v</span>²/c²) = ` +

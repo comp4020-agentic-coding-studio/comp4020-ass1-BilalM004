@@ -23,6 +23,8 @@ function makeRefs() {
   const shipPane = document.createElement("div");
   const earthAge = document.createElement("p");
   const shipAge = document.createElement("p");
+  const earthAgeTag = document.createElement("p");
+  const shipAgeTag = document.createElement("p");
   const earthTwin = document.createElement("figure");
   const shipTwin = document.createElement("figure");
   const formula = document.createElement("p");
@@ -48,6 +50,8 @@ function makeRefs() {
     shipPane,
     earthAge,
     shipAge,
+    earthAgeTag,
+    shipAgeTag,
     earthTwin,
     shipTwin,
     formula,
@@ -67,6 +71,8 @@ function makeRefs() {
     shipPane,
     earthAge,
     shipAge,
+    earthAgeTag,
+    shipAgeTag,
     earthTwin,
     shipTwin,
     formula,

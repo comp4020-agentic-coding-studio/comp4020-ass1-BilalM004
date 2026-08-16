@@ -2,7 +2,7 @@ import { renderExplainScreen } from "./explainScreen";
 import { skipLaunchSequence, startLaunchSequence, stopLaunchSequence } from "./launchScene";
 import { initMusicWidget } from "./musicWidget";
 import { renderProgressRail, type StepId } from "./progressRail";
-import { bringTwinsHome, startSplitScreen, stopSplitScreen, type BringHomeResult } from "./splitScreen";
+import { bringTwinsHome, STARTING_AGE, startSplitScreen, stopSplitScreen, type BringHomeResult } from "./splitScreen";
 
 const screens = document.querySelectorAll<HTMLElement>("[data-screen]");
 const progressSteps = Array.from(document.querySelectorAll<HTMLElement>(".progress-step"));
@@ -53,11 +53,17 @@ function handleSplitScreenFinished(result: BringHomeResult): void {
   const earthTwin = document.querySelector<HTMLElement>("#reunion-earth-twin");
   const shipTwin = document.querySelector<HTMLElement>("#reunion-ship-twin");
   const ages = document.querySelector<HTMLElement>("#reunion-ages");
+  const earthAgeTag = document.querySelector<HTMLElement>("#reunion-earth-age-tag");
+  const shipAgeTag = document.querySelector<HTMLElement>("#reunion-ship-age-tag");
   if (earthTwin) earthTwin.dataset.ageStage = result.earthStage;
   if (shipTwin) shipTwin.dataset.ageStage = result.shipStage;
   if (ages) {
-    ages.textContent = `Earth: ${result.earthYears.toFixed(1)} years — Ship: ${result.shipYears.toFixed(1)} years`;
+    ages.textContent =
+      `Time passed — Earth: ${result.earthYears.toFixed(1)} years — ` +
+      `Ship: ${result.shipYears.toFixed(1)} years`;
   }
+  if (earthAgeTag) earthAgeTag.textContent = `Age: ${(STARTING_AGE + result.earthYears).toFixed(1)}`;
+  if (shipAgeTag) shipAgeTag.textContent = `Age: ${(STARTING_AGE + result.shipYears).toFixed(1)}`;
 
   showScreen("reunion");
 }
@@ -75,6 +81,8 @@ function beginSplitScreen(): void {
   const shipPane = document.querySelector<HTMLElement>("#split-ship-pane");
   const earthAge = document.querySelector<HTMLElement>("#split-earth-age");
   const shipAge = document.querySelector<HTMLElement>("#split-ship-age");
+  const earthAgeTag = document.querySelector<HTMLElement>("#split-earth-age-tag");
+  const shipAgeTag = document.querySelector<HTMLElement>("#split-ship-age-tag");
   const earthTwin = document.querySelector<HTMLElement>("#split-earth-twin");
   const shipTwin = document.querySelector<HTMLElement>("#split-ship-twin");
   const formula = document.querySelector<HTMLElement>("#split-formula");
@@ -93,6 +101,8 @@ function beginSplitScreen(): void {
     shipPane &&
     earthAge &&
     shipAge &&
+    earthAgeTag &&
+    shipAgeTag &&
     earthTwin &&
     shipTwin &&
     formula &&
@@ -110,6 +120,8 @@ function beginSplitScreen(): void {
       shipPane,
       earthAge,
       shipAge,
+      earthAgeTag,
+      shipAgeTag,
       earthTwin,
       shipTwin,
       formula,
@@ -152,6 +164,9 @@ function goToStep(step: StepId): void {
   switch (step) {
     case "start":
       showScreen("start");
+      break;
+    case "twins":
+      showScreen("intro");
       break;
     case "choice":
       showScreen("choice");

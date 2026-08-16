@@ -2,17 +2,17 @@
 // separate from the DOM writes, so the mapping/ordering can be unit tested
 // without touching the page.
 
-export const STEP_ORDER = ["start", "choice", "compare", "reunion", "explain"] as const;
+export const STEP_ORDER = ["start", "twins", "choice", "compare", "reunion", "explain"] as const;
 
 export type StepId = (typeof STEP_ORDER)[number];
 
 export type StepState = "done" | "current" | "upcoming";
 
-// Every [data-screen] name the story can show, collapsed onto the five
+// Every [data-screen] name the story can show, collapsed onto the six
 // visible stages of the progress rail.
 export const SCREEN_TO_STEP: Record<string, StepId> = {
   start: "start",
-  intro: "start",
+  intro: "twins",
   choice: "choice",
   launch: "compare",
   split: "compare",

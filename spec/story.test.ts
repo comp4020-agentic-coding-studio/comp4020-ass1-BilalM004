@@ -25,7 +25,7 @@ describe("start screen", () => {
 describe("progress rail", () => {
   it("has exactly one step per stage of the story, in order", () => {
     const steps = [...doc.querySelectorAll(".progress-step")].map((el) => el.getAttribute("data-step"));
-    expect(steps).toEqual(["start", "choice", "compare", "reunion", "explain"]);
+    expect(steps).toEqual(["start", "twins", "choice", "compare", "reunion", "explain"]);
   });
 
   it("starts with the start step marked as current", () => {

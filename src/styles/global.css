@@ -641,6 +641,8 @@ h2:focus-visible {
 
 .body-hair {
   fill: #3a2a1e;
+  stroke: #3a2a1e;
+  stroke-width: 1.5;
 }
 
 .body-leg {
@@ -691,6 +693,14 @@ h2:focus-visible {
   stroke-linecap: round;
 }
 
+.face-wrinkle {
+  fill: none;
+  stroke: #8a6242;
+  stroke-width: 1.4;
+  stroke-linecap: round;
+  opacity: 0;
+}
+
 @keyframes twin-bob {
   0%,
   100% {
@@ -720,12 +730,24 @@ h2:focus-visible {
   display: block;
 }
 
-[data-age-stage="middle"] .body-hair {
-  fill: #9a9aa0;
-}
-
+/* The hairline is drawn as a thin crescent (two arcs closed with a straight
+   edge), and at that thinness the path's own antialiased boundary can leave
+   a hairline gap that shows the black page behind it through the crescent's
+   inner edge. A matching stroke covers that gap regardless of fill colour.
+   Both greying stages share one white shade -- ageing hair going grey then a
+   *different* white read as a colour change rather than a single transition. */
+[data-age-stage="middle"] .body-hair,
 [data-age-stage="old"] .body-hair {
   fill: #eef0f4;
+  stroke: #eef0f4;
+}
+
+[data-age-stage="middle"] .face-wrinkle {
+  opacity: 0.6;
+}
+
+[data-age-stage="old"] .face-wrinkle {
+  opacity: 1;
 }
 
 .twin-plain,
@@ -739,9 +761,12 @@ h2:focus-visible {
   transform: rotate(3deg);
 }
 
+/* More pronounced than the middle stage's stoop -- a bigger lean plus a
+   slight scale-down reads as "hunched and shrinking with age" at a glance,
+   rather than a subtle tilt easy to miss. */
 [data-age-stage="old"] .twin-plain,
 [data-age-stage="old"] .twin-suited {
-  transform: rotate(6deg) translate(-2px, 4px);
+  transform: rotate(10deg) translate(-3px, 6px) scale(0.94);
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -857,6 +882,12 @@ h2:focus-visible {
   margin: 0;
   font-size: 1.2rem;
   font-weight: 600;
+}
+
+.split-age-tag {
+  margin: 0;
+  font-size: 0.75rem;
+  color: #c7c9d9;
 }
 
 .split-formula-card {
@@ -1095,18 +1126,21 @@ h2:focus-visible {
    rule regardless of which media query matches. */
 @media (width < 600px) {
   .screen-split {
-    gap: 0.6rem;
-    padding: 0.6rem 1rem 0.75rem;
+    gap: 0.45rem;
+    padding: 0.45rem 1rem 0.5rem;
   }
 
   .split-grid {
     gap: 0.6rem;
   }
 
+  /* Tighter than the pre-age-tag budget: the "Age: N" line below the year
+     counter adds a row this layout didn't have room for, so gap/padding
+     both shrink to keep the whole split screen inside the viewport. */
   .split-pane {
     min-height: 7.5rem;
-    padding: 0.4rem 0.4rem 0.3rem;
-    gap: 0.25rem;
+    padding: 0.3rem 0.4rem 0.2rem;
+    gap: 0.15rem;
   }
 
   .split-pane .twin-figure {
@@ -1122,6 +1156,16 @@ h2:focus-visible {
     font-size: 0.95rem;
   }
 
+  .split-age-tag {
+    font-size: 0.65rem;
+    line-height: 1.1;
+  }
+
+  .split-formula-card {
+    gap: 0.25rem;
+    padding: 0.45rem 0.7rem;
+  }
+
   .split-formula-label {
     font-size: 0.7rem;
   }
@@ -1135,11 +1179,11 @@ h2:focus-visible {
   }
 
   .split-controls {
-    gap: 0.5rem;
+    gap: 0.4rem;
   }
 
   .split-controls-row {
-    gap: 0.5rem;
+    gap: 0.4rem;
   }
 
   .split-rate-hint {
@@ -1160,7 +1204,7 @@ h2:focus-visible {
   }
 
   .split-action-buttons {
-    gap: 0.5rem;
+    gap: 0.4rem;
   }
 
   .split-action-buttons .start-button {
@@ -1237,14 +1281,15 @@ h2:focus-visible {
 }
 
 .explain-axis {
-  stroke: #4a4f66;
-  stroke-width: 1;
+  stroke: #6b7390;
+  stroke-width: 1.5;
 }
 
 .explain-axis-label,
 .explain-axis-title {
-  font-size: 9px;
-  fill: #c7c9d9;
+  font-size: 13px;
+  font-weight: 600;
+  fill: #e3e4ee;
 }
 
 .explain-gamma-path {
@@ -1300,8 +1345,11 @@ h2:focus-visible {
     font-size: 0.85rem;
   }
 
+  /* Bumped up from 9.5rem -- at that size the axis labels rendered near
+     illegible, since SVG text scales down with the viewBox. The button
+     below shrinks to help make room for it. */
   .explain-graph {
-    max-width: 9.5rem;
+    max-width: 13rem;
   }
 
   .explain-gamma-caption {
@@ -1322,9 +1370,21 @@ h2:focus-visible {
   .screen-explain .secondary-button {
     margin-top: 0;
   }
+
+  .screen-explain .secondary-button {
+    min-height: 38px;
+    padding: 0.4rem 1.25rem;
+    font-size: 0.85rem;
+  }
 }
 
 /* Reunion */
+.reunion-age-note {
+  margin: 0;
+  font-size: 0.85rem;
+  color: #c7c9d9;
+}
+
 .reunion-twins {
   display: flex;
   gap: 3rem;
@@ -1333,13 +1393,40 @@ h2:focus-visible {
   justify-content: center;
 }
 
+.reunion-twin-block {
+  position: relative;
+}
+
+/* Absolutely positioned rather than stacked in flow: it needs to read as a
+   floating label over the character, not push the reunion screen's already
+   tight vertical budget any taller. Anchored at the block's own top edge
+   (not translated further up above it) so it never climbs into the note
+   above -- it overlaps the top of the head instead of floating clear of it. */
+.reunion-age-tag {
+  position: absolute;
+  top: 0;
+  left: 50%;
+  z-index: 1;
+  margin: 0;
+  padding: 0.15rem 0.6rem;
+  color: #f4f4f8;
+  font-size: 0.8rem;
+  font-weight: 600;
+  white-space: nowrap;
+  background: rgb(20 20 30 / 70%);
+  border-radius: 999px;
+  transform: translateX(-50%);
+}
+
 .reunion-ages {
   max-width: 30rem;
+  margin: 0;
   font-size: 1.1rem;
 }
 
 .reunion-line {
   max-width: 30rem;
+  margin: 0;
   color: #c7c9d9;
 }
 
@@ -1348,11 +1435,39 @@ h2:focus-visible {
  * default gap assumed -- trim it rather than let the page scroll. */
 @media (width <= 480px) {
   [data-screen="reunion"] {
-    gap: 0.5rem;
+    gap: 0.4rem;
+  }
+
+  .reunion-age-note {
+    font-size: 0.75rem;
   }
 
   .reunion-twins {
     gap: 1.5rem;
+  }
+
+  /* The two floating age tags and the extra note line above weren't part of
+     the budget this screen was originally tuned to fit -- shrink the figures
+     and drop the buttons' redundant margin-top (the screen's own flex gap
+     already spaces them) to claw the height back. */
+  .reunion-twins .twin-figure {
+    width: 5.5rem;
+  }
+
+  .reunion-ages {
+    font-size: 0.95rem;
+  }
+
+  .reunion-line {
+    font-size: 0.9rem;
+  }
+
+  [data-screen="reunion"] .start-button,
+  [data-screen="reunion"] .secondary-button {
+    margin-top: 0;
+    min-height: 38px;
+    padding: 0.4rem 1.25rem;
+    font-size: 0.85rem;
   }
 }
 

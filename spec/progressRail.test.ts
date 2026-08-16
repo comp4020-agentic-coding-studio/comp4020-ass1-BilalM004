@@ -30,8 +30,9 @@ describe("SCREEN_TO_STEP", () => {
     expect(SCREEN_TO_STEP.launch).toBe(SCREEN_TO_STEP.split);
   });
 
-  it("collapses start and intro onto the same step", () => {
-    expect(SCREEN_TO_STEP.start).toBe(SCREEN_TO_STEP.intro);
+  it("gives the intro (meet-the-twins) screen its own step, distinct from start", () => {
+    expect(SCREEN_TO_STEP.intro).not.toBe(SCREEN_TO_STEP.start);
+    expect(SCREEN_TO_STEP.intro).toBe("twins");
   });
 });
 
@@ -67,7 +68,7 @@ describe("renderProgressRail", () => {
     const steps = makeSteps();
     renderProgressRail(steps, "explain");
 
-    expect(steps.map((el) => el.dataset.state)).toEqual(["done", "done", "done", "done", "current"]);
+    expect(steps.map((el) => el.dataset.state)).toEqual(["done", "done", "done", "done", "done", "current"]);
   });
 
   it("keeps every step's button enabled, including ones not yet reached", () => {
