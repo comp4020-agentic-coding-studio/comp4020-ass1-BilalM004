@@ -65,12 +65,13 @@ describe("split screen", () => {
     expect(hint?.textContent).toMatch(/real second/i);
     const group = doc.querySelector(".split-rate-buttons");
     expect(group?.getAttribute("aria-label")).toMatch(/real second/i);
-    // The buttons themselves drop "real" to stay short -- the hint and the
-    // group's aria-label are what carry that "real time you spend watching"
+    // The buttons themselves drop "second" entirely to stay short and save
+    // room on mobile -- the hint, the group's aria-label, and each button's
+    // own aria-label are what carry the "real time you spend watching"
     // framing for screen reader users.
     const buttons = doc.querySelectorAll(".split-rate-button");
     for (const button of buttons) {
-      expect(button.textContent).toMatch(/second/i);
+      expect(button.getAttribute("aria-label")).toMatch(/second/i);
     }
   });
 
@@ -105,10 +106,11 @@ describe("explanation screen", () => {
     expect(title?.textContent?.trim()).not.toBe("");
   });
 
-  it("has a restart control back to the start screen", () => {
+  it("has a control back to the comparison screen to try new values", () => {
     const explain = doc.querySelector('[data-screen="explain"]');
-    const restart = explain?.querySelector('[data-action="restart"]');
-    expect(restart).toBeTruthy();
+    const tryAgain = explain?.querySelector('[data-action="try-again"]');
+    expect(tryAgain).toBeTruthy();
+    expect(tryAgain?.textContent?.trim()).toBe("Try new values");
   });
 
   it("has a non-empty written explanation", () => {
@@ -137,10 +139,11 @@ describe("reunion screen", () => {
     );
   });
 
-  it("has a restart control back to the start screen", () => {
+  it("has a control back to the comparison screen to try new values", () => {
     const reunion = doc.querySelector('[data-screen="reunion"]');
-    const restart = reunion?.querySelector('[data-action="restart"]');
-    expect(restart).toBeTruthy();
+    const tryAgain = reunion?.querySelector('[data-action="try-again"]');
+    expect(tryAgain).toBeTruthy();
+    expect(tryAgain?.textContent?.trim()).toBe("Try new values");
   });
 
   it("has a reachable, labelled button through to the explanation screen", () => {

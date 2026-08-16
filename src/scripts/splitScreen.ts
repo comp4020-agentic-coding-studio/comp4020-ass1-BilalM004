@@ -2,7 +2,7 @@ import {
   accumulateTick,
   ageStageForElapsedYears,
   clampVelocityFraction,
-  describeLorentzFormula,
+  describeLorentzFormulaParts,
   describeTimeDilationRatio,
   type AgeStage,
 } from "./physics";
@@ -50,6 +50,7 @@ interface ActiveSim {
   shipStage: AgeStage;
   announceAccumMs: number;
   playing: boolean;
+  homeReady: boolean;
   bringingHome: boolean;
   pendingHomeFinish: (() => void) | null;
   cleanupFns: Array<() => void>;
@@ -90,11 +91,25 @@ function applyStages(sim: ActiveSim): { earthChanged: boolean; shipChanged: bool
   return { earthChanged, shipChanged };
 }
 
+// Bring-them-home only does something useful once some time has actually
+// passed, so it starts as a quiet secondary action and only becomes the
+// obvious next step (highlighted button + hint) once there's an age gap to
+// go reveal -- a one-way switch, since years never go back down to zero.
+function updateBringHomeReadiness(sim: ActiveSim): void {
+  if (sim.homeReady || sim.earthYears <= 0) return;
+  sim.homeReady = true;
+  sim.refs.bringHomeButton.classList.add("is-ready");
+}
+
 function render(sim: ActiveSim): void {
   sim.refs.earthAge.textContent = `Earth: ${formatYears(sim.earthYears)} years`;
   sim.refs.shipAge.textContent = `Ship: ${formatYears(sim.shipYears)} years`;
-  sim.refs.formula.textContent = describeLorentzFormula(sim.velocity);
+  const { velocity, gamma } = describeLorentzFormulaParts(sim.velocity);
+  sim.refs.formula.innerHTML =
+    `γ = 1 / √(1 − <span class="split-formula-v">v</span>²/c²) = ` +
+    `1 / √(1 − <span class="split-formula-v">${velocity}</span>²) = ${gamma}`;
   sim.refs.mathSentence.textContent = describeTimeDilationRatio(sim.velocity);
+  updateBringHomeReadiness(sim);
 }
 
 function announce(sim: ActiveSim, message: string): void {
@@ -191,6 +206,7 @@ export function startSplitScreen(refs: SplitScreenRefs): void {
     shipStage: "young",
     announceAccumMs: 0,
     playing: false,
+    homeReady: false,
     bringingHome: false,
     pendingHomeFinish: null,
     cleanupFns: [],
@@ -199,6 +215,7 @@ export function startSplitScreen(refs: SplitScreenRefs): void {
 
   refs.screen.classList.remove("is-flashing");
   refs.announcer.textContent = "";
+  refs.bringHomeButton.classList.remove("is-ready");
   updatePlayButton(sim);
   syncPausedClass(sim);
   // Reset the rate buttons' visible pressed state to match `yearsPerSecond`

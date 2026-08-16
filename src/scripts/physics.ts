@@ -56,10 +56,21 @@ export function describeTimeDilationRatio(v: number): string {
   return `For every ${formatGamma(gamma)} years on Earth, only 1 year passes on the ship.`;
 }
 
-export function describeLorentzFormula(v: number): string {
+export interface LorentzFormulaParts {
+  velocity: string;
+  gamma: string;
+}
+
+// Split out so the DOM layer can wrap the ship-speed figures in their own
+// highlight span without this module (deliberately no-DOM) knowing about markup.
+export function describeLorentzFormulaParts(v: number): LorentzFormulaParts {
   const clamped = clampVelocityFraction(v);
-  const gamma = lorentzFactor(clamped);
-  return `γ = 1 / √(1 − v²/c²) = 1 / √(1 − ${clamped.toFixed(4)}²) = ${formatGamma(gamma)}`;
+  return { velocity: clamped.toFixed(4), gamma: formatGamma(lorentzFactor(clamped)) };
+}
+
+export function describeLorentzFormula(v: number): string {
+  const { velocity, gamma } = describeLorentzFormulaParts(v);
+  return `γ = 1 / √(1 − v²/c²) = 1 / √(1 − ${velocity}²) = ${gamma}`;
 }
 
 export interface GammaCurvePoint {

@@ -124,6 +124,24 @@ describe("split screen: ageing", () => {
 
     stopSplitScreen();
   });
+
+  it("highlights the bring-them-home button once years start passing", async () => {
+    const refs = makeRefs();
+    startSplitScreen(refs);
+
+    expect(refs.bringHomeButton.classList.contains("is-ready")).toBe(false);
+
+    refs.slider.value = "9900";
+    refs.slider.dispatchEvent(new Event("input"));
+    refs.rateButtons[2].dispatchEvent(new Event("click")); // 100 years/sec
+    toggleSplitScreenPlayback();
+
+    await wait(100);
+
+    expect(refs.bringHomeButton.classList.contains("is-ready")).toBe(true);
+
+    stopSplitScreen();
+  });
 });
 
 describe("split screen: tab visibility", () => {

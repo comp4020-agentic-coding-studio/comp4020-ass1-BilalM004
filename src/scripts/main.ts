@@ -209,3 +209,10 @@ document.querySelectorAll<HTMLElement>('[data-action="restart"]').forEach((eleme
     goToStep("start");
   });
 });
+
+document.querySelectorAll<HTMLElement>('[data-action="try-again"]').forEach((element) => {
+  element.addEventListener("click", (event) => {
+    event.preventDefault();
+    goToStep("compare");
+  });
+});
