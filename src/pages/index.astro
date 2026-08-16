@@ -27,6 +27,41 @@ const stars = Array.from({ length: STAR_COUNT }, () => ({
       </nav>
     </header>
 
+    <nav class="progress-rail" aria-label="Story progress">
+      <ol>
+        <li class="progress-step" data-step="start" data-state="current">
+          <button type="button" class="progress-step-button" data-step="start" aria-current="step">
+            <span class="progress-dot" aria-hidden="true"></span>
+            <span class="progress-label">Start</span>
+          </button>
+        </li>
+        <li class="progress-step" data-step="choice" data-state="upcoming">
+          <button type="button" class="progress-step-button" data-step="choice" disabled>
+            <span class="progress-dot" aria-hidden="true"></span>
+            <span class="progress-label">Choice</span>
+          </button>
+        </li>
+        <li class="progress-step" data-step="compare" data-state="upcoming">
+          <button type="button" class="progress-step-button" data-step="compare" disabled>
+            <span class="progress-dot" aria-hidden="true"></span>
+            <span class="progress-label">Compare</span>
+          </button>
+        </li>
+        <li class="progress-step" data-step="reunion" data-state="upcoming">
+          <button type="button" class="progress-step-button" data-step="reunion" disabled>
+            <span class="progress-dot" aria-hidden="true"></span>
+            <span class="progress-label">Reunion</span>
+          </button>
+        </li>
+        <li class="progress-step" data-step="explain" data-state="upcoming">
+          <button type="button" class="progress-step-button" data-step="explain" disabled>
+            <span class="progress-dot" aria-hidden="true"></span>
+            <span class="progress-label">Explain</span>
+          </button>
+        </li>
+      </ol>
+    </nav>
+
     <div class="stars" aria-hidden="true">
       {
         stars.map((star) => (

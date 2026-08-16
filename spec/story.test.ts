@@ -22,6 +22,29 @@ describe("start screen", () => {
   });
 });
 
+describe("progress rail", () => {
+  it("has exactly one step per stage of the story, in order", () => {
+    const steps = [...doc.querySelectorAll(".progress-step")].map((el) => el.getAttribute("data-step"));
+    expect(steps).toEqual(["start", "choice", "compare", "reunion", "explain"]);
+  });
+
+  it("starts with the start step marked as current", () => {
+    const current = doc.querySelectorAll('.progress-step-button[aria-current="step"]');
+    expect(current).toHaveLength(1);
+    expect(current[0]?.getAttribute("data-step")).toBe("start");
+  });
+
+  it("labels the rail for screen reader users", () => {
+    const rail = doc.querySelector(".progress-rail");
+    expect(rail?.getAttribute("aria-label")?.trim()).not.toBe("");
+  });
+
+  it("only enables the start button by default -- the rest aren't reached yet", () => {
+    const buttons = [...doc.querySelectorAll<HTMLButtonElement>(".progress-step-button")];
+    expect(buttons.map((button) => button.hasAttribute("disabled"))).toEqual([false, true, true, true, true]);
+  });
+});
+
 describe("resilience", () => {
   it("disables star animation under prefers-reduced-motion", () => {
     expect(builtCss()).toContain("prefers-reduced-motion");
