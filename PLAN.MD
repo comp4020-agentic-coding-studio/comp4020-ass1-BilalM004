@@ -7,6 +7,7 @@
 2. **Intro** — Meet the twins. Brief setup: "What if one of you could travel near the speed of light?"
 3. **Choice point** — The visitor picks a path:
 	- **Speed (special relativity)** → rocket launch, Three.js zoom-out through the solar system, then split-screen with velocity slider
+		- *Update:* built as one continuous flight, not a "zoom-out" cut into a separate shot — liftoff (Sun visible) and the solar-system flyby (Mercury through Saturn, plus an asteroid belt) share a single unbroken camera path and trajectory, no scene cuts or direction changes.
 	- *Will implement later if time permits*
 		- **Gravity (general relativity)** → instant teleport to a planet near a black hole, split-screen with proximity slider
 4. **Split screen** — Earth twin on left, travelling twin on right. Clocks tick at different rates. Characters age visibly. The visitor controls the variable (speed or gravity).
