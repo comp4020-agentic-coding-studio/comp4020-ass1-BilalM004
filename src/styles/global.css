@@ -626,3 +626,291 @@ h2:focus-visible {
     animation: none;
   }
 }
+
+/* Age-stage visuals: hair colour, a stoop, and a cane -- driven by
+ * `data-age-stage` on TwinCharacter's own root <figure>, so every instance
+ * (intro, launch, split screen, reunion) ages the same way independently. */
+.twin-stick {
+  display: none;
+  fill: #6b5a45;
+}
+
+[data-age-stage="old"] .twin-stick {
+  display: block;
+}
+
+[data-age-stage="middle"] .body-hair {
+  fill: #9a9aa0;
+}
+
+[data-age-stage="old"] .body-hair {
+  fill: #eef0f4;
+}
+
+.twin-plain,
+.twin-suited {
+  transform-origin: 60px 160px;
+  transition: transform 0.6s ease;
+}
+
+[data-age-stage="middle"] .twin-plain,
+[data-age-stage="middle"] .twin-suited {
+  transform: rotate(3deg);
+}
+
+[data-age-stage="old"] .twin-plain,
+[data-age-stage="old"] .twin-suited {
+  transform: rotate(6deg) translate(-2px, 4px);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .twin-plain,
+  .twin-suited {
+    transition: none;
+  }
+}
+
+/* Split-screen: time dilation simulator */
+.screen-split {
+  gap: 1.5rem;
+  padding-top: 3rem;
+}
+
+.split-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 1.5rem;
+  width: 100%;
+  max-width: 64rem;
+}
+
+@media (width >= 600px) {
+  .split-grid {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+.split-pane {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 0.75rem;
+  min-height: 20rem;
+  padding: 1.5rem 1rem;
+  overflow: hidden;
+  border-radius: 1rem;
+}
+
+.split-sky {
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background: linear-gradient(180deg, #2f5f8f 0%, #7fb3d5 60%, #cfe8f0 100%);
+  transition: background 2s ease;
+}
+
+[data-age-stage="middle"] .split-sky {
+  background: linear-gradient(180deg, #7a4a3a 0%, #c98a52 60%, #f2c98a 100%);
+}
+
+[data-age-stage="old"] .split-sky {
+  background: linear-gradient(180deg, #04040c 0%, #131832 60%, #2b2b4a 100%);
+}
+
+.split-ground {
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  z-index: -1;
+  height: 25%;
+  background: #1c2a1e;
+}
+
+.split-pane-ship {
+  background: #0a0a14;
+}
+
+.split-window {
+  position: relative;
+  width: 90%;
+  height: 9rem;
+  overflow: hidden;
+  background: #05050c;
+  border: 6px solid #3a3f52;
+  border-radius: 50% 50% 8% 8%;
+}
+
+.split-star-streak {
+  position: absolute;
+  inset: -50% -10%;
+  background-image: repeating-linear-gradient(
+    100deg,
+    rgb(255 255 255 / 85%) 0,
+    rgb(255 255 255 / 85%) 2px,
+    transparent 2px,
+    transparent 60px
+  );
+  animation: star-streak var(--streak-speed, 6s) linear infinite;
+}
+
+@keyframes star-streak {
+  from {
+    background-position: 0 0;
+  }
+
+  to {
+    background-position: -400px 0;
+  }
+}
+
+.split-age-counter {
+  margin: 0;
+  font-size: 1.4rem;
+  font-weight: 600;
+}
+
+.split-formula {
+  margin: 0;
+  font-family: "Courier New", monospace;
+  font-size: 1.1rem;
+  color: #eaf6ff;
+}
+
+.split-math-sentence {
+  max-width: 32rem;
+  margin: 0;
+  color: #c7c9d9;
+}
+
+.split-controls {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
+  width: 100%;
+  max-width: 28rem;
+}
+
+.split-slider-label {
+  font-size: 0.9rem;
+  color: #c7c9d9;
+}
+
+.split-velocity-slider {
+  width: 100%;
+  min-height: 44px;
+}
+
+.split-rate-hint {
+  max-width: 24rem;
+  margin: 0;
+  font-size: 0.85rem;
+  color: #c7c9d9;
+  text-align: center;
+}
+
+.split-rate-buttons {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 0.5rem;
+}
+
+.split-rate-button {
+  min-height: 44px;
+  padding: 0.5rem 1rem;
+  font-size: 0.9rem;
+  color: #f4f4f8;
+  cursor: pointer;
+  background: rgb(20 20 30 / 60%);
+  border: 1px solid rgb(244 244 248 / 30%);
+  border-radius: 999px;
+}
+
+.split-rate-button[aria-pressed="true"] {
+  color: #000;
+  background: #8ab4ff;
+  border-color: #8ab4ff;
+}
+
+.split-rate-button:hover {
+  background: rgb(20 20 30 / 85%);
+}
+
+.split-rate-button[aria-pressed="true"]:hover {
+  background: #6f9fee;
+}
+
+.split-flash {
+  position: fixed;
+  inset: 0;
+  z-index: 5;
+  pointer-events: none;
+  background: #fff;
+  opacity: 0;
+  transition: opacity 0.4s ease;
+}
+
+.screen-split.is-flashing .split-flash {
+  opacity: 1;
+}
+
+/*
+ * The tab was backgrounded: freeze the CSS-driven star-streak and sky-gradient
+ * animations, mirroring `.launch-ground.is-paused` -- otherwise they keep
+ * advancing on their own wall clock while the rAF loop is correctly suspended.
+ */
+.screen-split.is-paused,
+.screen-split.is-paused * {
+  animation-play-state: paused !important;
+}
+
+@media (width <= 480px) {
+  .split-pane {
+    min-height: 16rem;
+  }
+
+  .split-window {
+    height: 7rem;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .split-sky,
+  .split-flash {
+    transition: none;
+  }
+
+  .split-star-streak {
+    animation: none;
+  }
+}
+
+/* Reunion */
+.reunion-twins {
+  display: flex;
+  gap: 3rem;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  justify-content: center;
+}
+
+.reunion-ages {
+  max-width: 30rem;
+  font-size: 1.1rem;
+}
+
+.reunion-line {
+  max-width: 30rem;
+  color: #c7c9d9;
+}
+
+.split-rate-button:focus-visible,
+.split-velocity-slider:focus-visible,
+#split-bring-home-button:focus-visible {
+  outline: 2px solid #8ab4ff;
+  outline-offset: 3px;
+}

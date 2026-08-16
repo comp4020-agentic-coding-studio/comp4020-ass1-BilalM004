@@ -3,13 +3,22 @@ interface Props {
   label: string;
   suited?: boolean;
   shirtColor?: string;
+  ageStage?: "young" | "middle" | "old";
   class?: string;
+  id?: string;
 }
 
-const { label, suited = false, shirtColor = "#8ab4ff", class: className = "" } = Astro.props;
+const {
+  label,
+  suited = false,
+  shirtColor = "#8ab4ff",
+  ageStage = "young",
+  class: className = "",
+  id,
+} = Astro.props;
 ---
 
-<figure class:list={["twin", className]}>
+<figure class:list={["twin", className]} data-age-stage={ageStage} id={id}>
   <svg
     class="twin-figure"
     viewBox="0 0 120 200"
@@ -25,6 +34,7 @@ const { label, suited = false, shirtColor = "#8ab4ff", class: className = "" } =
           <rect x="86" y="78" width="24" height="55" rx="10" class="suit-body" />
           <rect x="34" y="150" width="20" height="40" rx="8" class="suit-boot" />
           <rect x="66" y="150" width="20" height="40" rx="8" class="suit-boot" />
+          <rect x="2" y="150" width="6" height="66" rx="3" class="twin-stick" />
           <circle cx="60" cy="112" r="7" class="suit-light" />
           <circle cx="60" cy="42" r="26" class="suit-helmet" />
           <circle cx="60" cy="44" r="22" class="body-skin" />
@@ -42,6 +52,7 @@ const { label, suited = false, shirtColor = "#8ab4ff", class: className = "" } =
           <rect x="84" y="82" width="20" height="50" rx="9" class="body-skin" />
           <rect x="38" y="150" width="18" height="40" rx="6" class="body-leg" />
           <rect x="64" y="150" width="18" height="40" rx="6" class="body-leg" />
+          <rect x="6" y="150" width="6" height="66" rx="3" class="twin-stick" />
           <circle cx="60" cy="44" r="24" class="body-skin" />
           <path d="M36 40 a24 24 0 0 1 48 0 v-6 a24 20 0 0 0 -48 0 z" class="body-hair" />
           <circle cx="52" cy="42" r="2.4" class="face-eye" />

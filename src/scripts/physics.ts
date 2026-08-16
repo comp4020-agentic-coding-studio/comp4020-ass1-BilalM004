@@ -1,0 +1,63 @@
+// Pure special-relativity math for the split-screen twin simulation. No DOM.
+//
+// Earth is treated as a single valid inertial frame for the whole run: the
+// story's reunion is an instant teleport with "no return trip", so the usual
+// twin-paradox turnaround/frame-swap subtlety never comes up here.
+
+export const MAX_VELOCITY_FRACTION = 0.9999;
+
+export function clampVelocityFraction(v: number): number {
+  if (Number.isNaN(v)) return 0;
+  return Math.min(Math.max(v, 0), MAX_VELOCITY_FRACTION);
+}
+
+export function lorentzFactor(v: number): number {
+  const clamped = clampVelocityFraction(v);
+  return 1 / Math.sqrt(1 - clamped * clamped);
+}
+
+export function shipYearsForEarthYears(earthDtYears: number, v: number): number {
+  return earthDtYears / lorentzFactor(v);
+}
+
+export type AgeStage = "young" | "middle" | "old";
+
+export const AGE_STAGE_THRESHOLD_YEARS = { middle: 15, old: 40 };
+
+export function ageStageForElapsedYears(elapsedYears: number): AgeStage {
+  if (elapsedYears >= AGE_STAGE_THRESHOLD_YEARS.old) return "old";
+  if (elapsedYears >= AGE_STAGE_THRESHOLD_YEARS.middle) return "middle";
+  return "young";
+}
+
+export interface AgeState {
+  earthYears: number;
+  shipYears: number;
+}
+
+// Returns a NEW state -- never mutates `state` -- and only ever converts the
+// one `earthDtYears` slice passed in using the velocity active *during* that
+// slice. A velocity change on the next call therefore only changes future
+// accumulation; it can never retroactively rewrite years already accrued.
+export function accumulateTick(state: AgeState, earthDtYears: number, v: number): AgeState {
+  return {
+    earthYears: state.earthYears + earthDtYears,
+    shipYears: state.shipYears + shipYearsForEarthYears(earthDtYears, v),
+  };
+}
+
+function formatGamma(gamma: number): string {
+  return gamma.toFixed(gamma < 10 ? 2 : 1);
+}
+
+export function describeTimeDilationRatio(v: number): string {
+  const gamma = lorentzFactor(v);
+  if (gamma < 1.01) return "Earth and the ship are ageing at almost the same rate.";
+  return `For every ${formatGamma(gamma)} years on Earth, only 1 year passes on the ship.`;
+}
+
+export function describeLorentzFormula(v: number): string {
+  const clamped = clampVelocityFraction(v);
+  const gamma = lorentzFactor(clamped);
+  return `γ = 1 / √(1 − v²/c²) = 1 / √(1 − ${clamped.toFixed(4)}²) = ${formatGamma(gamma)}`;
+}

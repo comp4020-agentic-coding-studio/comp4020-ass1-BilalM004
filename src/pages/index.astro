@@ -75,6 +75,76 @@ const stars = Array.from({ length: STAR_COUNT }, () => ({
         <button id="launch-skip-button" class="skip-button" type="button">Skip</button>
         <p class="texture-credit">Planet &amp; sun imagery: Solar System Scope (CC BY 4.0), NASA</p>
       </section>
+
+      <section id="screen-split" class="screen screen-split" data-screen="split" hidden>
+        <h2 tabindex="-1" class="sr-only">Time dilation simulator</h2>
+        <div class="split-flash" aria-hidden="true"></div>
+        <div class="split-grid">
+          <div class="split-pane split-pane-earth" data-age-stage="young" id="split-earth-pane">
+            <div class="split-sky" aria-hidden="true"></div>
+            <div class="split-ground" aria-hidden="true"></div>
+            <p class="split-age-counter" id="split-earth-age">Earth: 0.0 years</p>
+            <TwinCharacter label="The twin who stays" shirtColor="#8ab4ff" id="split-earth-twin" />
+          </div>
+          <div class="split-pane split-pane-ship" data-age-stage="young" id="split-ship-pane">
+            <div class="split-window" aria-hidden="true">
+              <div class="split-star-streak" id="split-star-streak"></div>
+            </div>
+            <p class="split-age-counter" id="split-ship-age">Ship: 0.0 years</p>
+            <TwinCharacter label="The twin who goes" suited id="split-ship-twin" />
+          </div>
+        </div>
+
+        <p class="split-formula" id="split-formula" aria-live="off">
+          γ = 1 / √(1 − v²/c²) = 1 / √(1 − 0.0000²) = 1.00
+        </p>
+        <p class="split-math-sentence" id="split-math-sentence" aria-live="off">
+          Earth and the ship are ageing at almost the same rate.
+        </p>
+        <p class="sr-only" id="split-announcer" aria-live="polite"></p>
+
+        <div class="split-controls">
+          <label class="split-slider-label" for="split-velocity-slider">Ship speed (fraction of light speed)</label>
+          <input
+            type="range"
+            id="split-velocity-slider"
+            class="split-velocity-slider"
+            min="0"
+            max="9999"
+            step="1"
+            value="0"
+            aria-valuetext="0% of the speed of light"
+          />
+          <p class="split-rate-hint" id="split-rate-hint">
+            Pick how fast the years pass while you watch: each real second you spend on this screen
+            advances the simulation by the amount below.
+          </p>
+          <div class="split-rate-buttons" role="group" aria-label="Simulation speed, in years per real second you spend watching">
+            <button type="button" class="split-rate-button" data-rate="1" aria-pressed="true">
+              1 real second you watch = 1 year
+            </button>
+            <button type="button" class="split-rate-button" data-rate="10" aria-pressed="false">
+              1 real second you watch = 10 years
+            </button>
+            <button type="button" class="split-rate-button" data-rate="100" aria-pressed="false">
+              1 real second you watch = 100 years
+            </button>
+          </div>
+          <button id="split-play-button" class="start-button" type="button" aria-pressed="false">Play</button>
+          <button id="split-bring-home-button" class="start-button" type="button">Bring them home</button>
+        </div>
+      </section>
+
+      <section id="screen-reunion" class="screen" data-screen="reunion" hidden>
+        <h2 tabindex="-1">Reunited</h2>
+        <div class="reunion-twins">
+          <TwinCharacter label="The twin who stays" shirtColor="#8ab4ff" id="reunion-earth-twin" />
+          <TwinCharacter label="The twin who goes" suited id="reunion-ship-twin" />
+        </div>
+        <p class="reunion-ages" id="reunion-ages">Earth: 0.0 years — Ship: 0.0 years</p>
+        <p class="reunion-line">Teleported home instantly — no return trip, no extra time lost.</p>
+        <a href="#screen-start" class="start-button" data-action="restart">Start over</a>
+      </section>
     </main>
 
     <script src="../scripts/main.ts"></script>

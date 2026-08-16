@@ -1,0 +1,111 @@
+import { describe, expect, it } from "vitest";
+import { builtCss, loadDoc } from "./helpers";
+
+// Checks for story step 4/5 (split-screen time dilation simulator + reunion)
+// against the built site. The live-updating numbers/formula themselves are
+// exercised by spec/splitScreen.test.ts; these assert the shipped markup.
+const doc = loadDoc("index.html");
+
+describe("split screen", () => {
+  it("is hidden by default", () => {
+    const split = doc.querySelector('[data-screen="split"]');
+    expect(split).toBeTruthy();
+    expect(split?.hasAttribute("hidden")).toBe(true);
+  });
+
+  it("has exactly one selected rate button", () => {
+    const pressed = doc.querySelectorAll('.split-rate-button[aria-pressed="true"]');
+    expect(pressed).toHaveLength(1);
+  });
+
+  it("has a velocity slider with a non-empty accessible label", () => {
+    const slider = doc.querySelector("#split-velocity-slider");
+    expect(slider?.tagName).toBe("INPUT");
+    const label = doc.querySelector('label[for="split-velocity-slider"]');
+    expect(label?.textContent?.trim()).not.toBe("");
+  });
+
+  it("does not spam screen readers with the per-frame age counters or math sentence", () => {
+    const earthAge = doc.querySelector("#split-earth-age");
+    const shipAge = doc.querySelector("#split-ship-age");
+    const formula = doc.querySelector("#split-formula");
+    const mathSentence = doc.querySelector("#split-math-sentence");
+    expect(earthAge?.getAttribute("aria-live")).not.toBe("polite");
+    expect(shipAge?.getAttribute("aria-live")).not.toBe("polite");
+    expect(formula?.getAttribute("aria-live")).toBe("off");
+    expect(mathSentence?.getAttribute("aria-live")).toBe("off");
+  });
+
+  it("has a dedicated throttled announcer region", () => {
+    const announcer = doc.querySelector("#split-announcer");
+    expect(announcer?.getAttribute("aria-live")).toBe("polite");
+  });
+
+  it("shows the actual Lorentz formula, not just the plain-language sentence", () => {
+    const formula = doc.querySelector("#split-formula");
+    expect(formula?.textContent).toContain("γ");
+    expect(formula?.textContent).toMatch(/1 − v²\/c²/);
+  });
+
+  it("has a reachable, labelled bring-them-home button", () => {
+    const button = doc.querySelector("#split-bring-home-button");
+    expect(button?.tagName).toBe("BUTTON");
+    expect(button?.textContent?.trim()).not.toBe("");
+  });
+
+  it("has a reachable play/pause button, starting unpressed", () => {
+    const button = doc.querySelector("#split-play-button");
+    expect(button?.tagName).toBe("BUTTON");
+    expect(button?.textContent?.trim()).not.toBe("");
+    expect(button?.getAttribute("aria-pressed")).toBe("false");
+  });
+
+  it("explains the rate buttons in terms of real time the visitor spends watching", () => {
+    const hint = doc.querySelector("#split-rate-hint");
+    expect(hint?.textContent).toMatch(/real second/i);
+    const group = doc.querySelector(".split-rate-buttons");
+    expect(group?.getAttribute("aria-label")).toMatch(/real second/i);
+    const buttons = doc.querySelectorAll(".split-rate-button");
+    for (const button of buttons) {
+      expect(button.textContent).toMatch(/real second/i);
+    }
+  });
+
+  it("defaults both twins to the young age stage with their existing markup intact", () => {
+    const earthTwin = doc.querySelector("#split-earth-twin");
+    const shipTwin = doc.querySelector("#split-ship-twin");
+    expect(earthTwin?.getAttribute("data-age-stage")).toBe("young");
+    expect(shipTwin?.getAttribute("data-age-stage")).toBe("young");
+    expect(earthTwin?.querySelector(".twin-plain")).toBeTruthy();
+    expect(shipTwin?.querySelector(".twin-suited")).toBeTruthy();
+  });
+});
+
+describe("reunion screen", () => {
+  it("is hidden by default", () => {
+    const reunion = doc.querySelector('[data-screen="reunion"]');
+    expect(reunion).toBeTruthy();
+    expect(reunion?.hasAttribute("hidden")).toBe(true);
+  });
+
+  it("states the exact no-return-trip line", () => {
+    const reunion = doc.querySelector('[data-screen="reunion"]');
+    expect(reunion?.textContent).toContain(
+      "Teleported home instantly — no return trip, no extra time lost.",
+    );
+  });
+
+  it("has a restart control back to the start screen", () => {
+    const reunion = doc.querySelector('[data-screen="reunion"]');
+    const restart = reunion?.querySelector('[data-action="restart"]');
+    expect(restart).toBeTruthy();
+  });
+});
+
+describe("resilience", () => {
+  it("ships the responsive split-grid breakpoint and reduced-motion styles", () => {
+    const css = builtCss();
+    expect(css).toContain("600px");
+    expect(css).toContain("prefers-reduced-motion");
+  });
+});

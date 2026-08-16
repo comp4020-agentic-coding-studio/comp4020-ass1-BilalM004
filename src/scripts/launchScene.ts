@@ -14,6 +14,7 @@ export interface LaunchRefs {
   canvas: HTMLCanvasElement;
   caption: HTMLElement;
   skipButton: HTMLButtonElement;
+  onFinished?: () => void;
 }
 
 type Vec3 = [number, number, number];
@@ -558,6 +559,19 @@ document.addEventListener("visibilitychange", () => {
   }
 });
 
+// A <canvas> can only ever produce one live WebGL context for its whole
+// lifetime -- once `renderer.dispose()`/`forceContextLoss()` has torn one
+// down, a later `new THREE.WebGLRenderer({ canvas })` on that *same* node
+// gets back the dead context and throws instead of creating a fresh one.
+// Swapping in a clone (same id/classes, no context history) is what lets a
+// restart build a working scene the second time.
+function renewCanvas(canvas: HTMLCanvasElement): HTMLCanvasElement {
+  const fresh = canvas.cloneNode(false) as HTMLCanvasElement;
+  fresh.classList.remove("is-visible");
+  canvas.replaceWith(fresh);
+  return fresh;
+}
+
 function resetGroundLayer(refs: LaunchRefs): void {
   refs.ground.hidden = false;
   refs.ground.classList.remove("is-fading", "is-paused");
@@ -646,6 +660,7 @@ function finishSequence(sequence: ActiveSequence): void {
   sequence.finished = true;
   sequence.raf = null;
   sequence.refs.skipButton.hidden = true;
+  sequence.refs.onFinished?.();
 }
 
 async function crossFadeIntoScene(sequence: ActiveSequence): Promise<void> {
@@ -756,5 +771,6 @@ export function stopLaunchSequence(): void {
     window.removeEventListener("orientationchange", sequence.resizeListener);
   }
   sequence.scene?.dispose();
+  if (sequence.scene) sequence.refs.canvas = renewCanvas(sequence.refs.canvas);
   resetGroundLayer(sequence.refs);
 }
