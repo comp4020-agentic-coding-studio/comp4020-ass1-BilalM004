@@ -188,7 +188,7 @@ describe("split screen: play/pause", () => {
     startSplitScreen(refs);
 
     expect(refs.screen.classList.contains("is-paused")).toBe(true);
-    expect(refs.playButton.textContent).toBe("Play");
+    expect(refs.playButton.textContent).toBe("Play simulation");
     expect(refs.playButton.getAttribute("aria-pressed")).toBe("false");
 
     // Adjusting the slider before pressing play must not itself start ageing.
@@ -207,7 +207,7 @@ describe("split screen: play/pause", () => {
 
     expect(toggleSplitScreenPlayback()).toBe(true);
     expect(refs.screen.classList.contains("is-paused")).toBe(false);
-    expect(refs.playButton.textContent).toBe("Pause");
+    expect(refs.playButton.textContent).toBe("Pause simulation");
     expect(refs.playButton.getAttribute("aria-pressed")).toBe("true");
 
     await wait(150);
@@ -216,7 +216,7 @@ describe("split screen: play/pause", () => {
 
     expect(toggleSplitScreenPlayback()).toBe(false);
     expect(refs.screen.classList.contains("is-paused")).toBe(true);
-    expect(refs.playButton.textContent).toBe("Play");
+    expect(refs.playButton.textContent).toBe("Play simulation");
     const frozenAt = refs.earthAge.textContent;
     await wait(150);
     expect(refs.earthAge.textContent).toBe(frozenAt);

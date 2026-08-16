@@ -139,34 +139,54 @@ const stars = Array.from({ length: STAR_COUNT }, () => ({
         <p class="sr-only" id="split-announcer" aria-live="polite"></p>
 
         <div class="split-controls">
-          <label class="split-slider-label" for="split-velocity-slider">Ship speed (fraction of light speed)</label>
-          <input
-            type="range"
-            id="split-velocity-slider"
-            class="split-velocity-slider"
-            min="0"
-            max="9999"
-            step="1"
-            value="0"
-            aria-valuetext="0% of the speed of light"
-          />
-          <p class="split-rate-hint" id="split-rate-hint">
-            Pick how fast the years pass while you watch: each real second you spend on this screen
-            advances the simulation by the amount below.
-          </p>
-          <div class="split-rate-buttons" role="group" aria-label="Simulation speed, in years per real second you spend watching">
-            <button type="button" class="split-rate-button" data-rate="1" aria-pressed="true">
-              1 real second you watch = 1 year
+          <div class="split-controls-row">
+            <div class="split-slider-group">
+              <label class="split-slider-label" for="split-velocity-slider"
+                >Ship speed (fraction of light speed)</label
+              >
+              <input
+                type="range"
+                id="split-velocity-slider"
+                class="split-velocity-slider"
+                min="0"
+                max="9999"
+                step="1"
+                value="0"
+                aria-valuetext="0% of the speed of light"
+              />
+            </div>
+            <div class="split-rate-group">
+              <p class="split-rate-hint" id="split-rate-hint">Each real second you watch advances it by:</p>
+              <div
+                class="split-rate-buttons"
+                role="group"
+                aria-label="Simulation speed, in years per real second you spend watching"
+              >
+                <button type="button" class="split-rate-button" data-rate="1" aria-pressed="true">
+                  1 second = 1 year
+                </button>
+                <button type="button" class="split-rate-button" data-rate="10" aria-pressed="false">
+                  1 second = 10 years
+                </button>
+                <button type="button" class="split-rate-button" data-rate="100" aria-pressed="false">
+                  1 second = 100 years
+                </button>
+              </div>
+            </div>
+          </div>
+          <div class="split-action-buttons">
+            <button
+              id="split-play-button"
+              class="start-button split-play-button"
+              type="button"
+              aria-pressed="false"
+            >
+              Play simulation
             </button>
-            <button type="button" class="split-rate-button" data-rate="10" aria-pressed="false">
-              1 real second you watch = 10 years
-            </button>
-            <button type="button" class="split-rate-button" data-rate="100" aria-pressed="false">
-              1 real second you watch = 100 years
+            <button id="split-bring-home-button" class="start-button split-bring-home-button" type="button">
+              Bring them home
             </button>
           </div>
-          <button id="split-play-button" class="start-button" type="button" aria-pressed="false">Play</button>
-          <button id="split-bring-home-button" class="start-button" type="button">Bring them home</button>
         </div>
       </section>
 

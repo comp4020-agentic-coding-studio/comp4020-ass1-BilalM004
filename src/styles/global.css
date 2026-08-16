@@ -541,6 +541,21 @@ h2:focus-visible {
   animation: twin-bob 3.4s ease-in-out infinite;
 }
 
+/* Smaller than the 8rem default: the split screen needs its two panes plus
+   the controls below them on screen together, so it can't afford the full
+   figure size the intro/reunion screens use. */
+.split-pane .twin-figure {
+  width: 7.5rem;
+}
+
+/* The SVG already carries the twin's name via aria-label, so this caption
+   is a visual and screen-reader duplicate here -- unlike on the intro/reunion
+   screens, where it's the only label. Hiding it buys back vertical space the
+   split screen doesn't have to spare. */
+.split-pane figcaption {
+  display: none;
+}
+
 .twin:nth-child(2) .twin-figure {
   animation-delay: 0.4s;
 }
@@ -672,14 +687,22 @@ h2:focus-visible {
 
 /* Split-screen: time dilation simulator */
 .screen-split {
-  gap: 1.5rem;
-  padding-top: 3rem;
+  /* Unlike the other screens, this one is a fixed, dense block of controls
+     rather than centred full-screen content -- .screen's min-height: 100vh
+     is a floor on top of which this section's own padding still adds (the
+     site doesn't use box-sizing: border-box), so it works against fitting
+     the slider/buttons on screen together without scrolling. Content alone
+     decides the height here. */
+  min-height: auto;
+  gap: 1rem;
+  padding-top: 2rem;
+  padding-bottom: 1rem;
 }
 
 .split-grid {
   display: grid;
   grid-template-columns: 1fr;
-  gap: 1.5rem;
+  gap: 1rem;
   width: 100%;
   max-width: 64rem;
 }
@@ -696,9 +719,9 @@ h2:focus-visible {
   flex-direction: column;
   align-items: center;
   justify-content: flex-end;
-  gap: 0.75rem;
-  min-height: 20rem;
-  padding: 1.5rem 1rem;
+  gap: 0.5rem;
+  min-height: 16rem;
+  padding: 1rem 1rem 0.75rem;
   overflow: hidden;
   border-radius: 1rem;
 }
@@ -736,7 +759,7 @@ h2:focus-visible {
 .split-window {
   position: relative;
   width: 90%;
-  height: 9rem;
+  height: 8.5rem;
   overflow: hidden;
   background: #05050c;
   border: 6px solid #3a3f52;
@@ -768,7 +791,7 @@ h2:focus-visible {
 
 .split-age-counter {
   margin: 0;
-  font-size: 1.4rem;
+  font-size: 1.2rem;
   font-weight: 600;
 }
 
@@ -789,9 +812,50 @@ h2:focus-visible {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 1rem;
+  gap: 0.75rem;
   width: 100%;
   max-width: 28rem;
+}
+
+/* Ship-speed slider on the left, simulation-speed buttons on the right --
+   two columns instead of one long stack, so both are on screen together
+   without scrolling. Stacked (slider above buttons) below 600px to match
+   the split-grid breakpoint, since there isn't room for two columns next
+   to each other at phone widths. */
+.split-controls-row {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  width: 100%;
+}
+
+@media (width >= 600px) {
+  .split-controls {
+    max-width: 40rem;
+  }
+
+  .split-controls-row {
+    flex-direction: row;
+    align-items: flex-start;
+    gap: 1.5rem;
+  }
+
+  .split-slider-group,
+  .split-rate-group {
+    flex: 1;
+  }
+}
+
+.split-slider-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.split-rate-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
 }
 
 .split-slider-label {
@@ -805,9 +869,8 @@ h2:focus-visible {
 }
 
 .split-rate-hint {
-  max-width: 24rem;
   margin: 0;
-  font-size: 0.85rem;
+  font-size: 0.8rem;
   color: #c7c9d9;
   text-align: center;
 }
@@ -816,18 +879,40 @@ h2:focus-visible {
   display: flex;
   flex-wrap: wrap;
   justify-content: center;
-  gap: 0.5rem;
+  gap: 0.4rem;
+}
+
+@media (width >= 600px) {
+  .split-rate-hint {
+    text-align: left;
+  }
+
+  .split-rate-buttons {
+    flex-direction: column;
+    align-items: stretch;
+  }
 }
 
 .split-rate-button {
-  min-height: 44px;
-  padding: 0.5rem 1rem;
-  font-size: 0.9rem;
+  min-height: 38px;
+  padding: 0.4rem 0.85rem;
+  font-size: 0.78rem;
   color: #f4f4f8;
   cursor: pointer;
   background: rgb(20 20 30 / 60%);
   border: 1px solid rgb(244 244 248 / 30%);
   border-radius: 999px;
+}
+
+.split-action-buttons {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 0.75rem;
+}
+
+.split-action-buttons .start-button {
+  margin-top: 0;
 }
 
 .split-rate-button[aria-pressed="true"] {
@@ -842,6 +927,107 @@ h2:focus-visible {
 
 .split-rate-button[aria-pressed="true"]:hover {
   background: #6f9fee;
+}
+
+/* Play is the primary action (filled, accent) since nothing ages until it's
+   pressed; bring-them-home is the secondary one (outline) that only makes
+   sense once you've watched some time pass. The filled/outline contrast is
+   what makes the intended order apparent, not just word order. */
+.split-play-button {
+  background: #8ab4ff;
+  color: #000;
+}
+
+.split-play-button:hover {
+  background: #6f9fee;
+}
+
+.split-play-button[aria-pressed="true"] {
+  background: #6f9fee;
+}
+
+.split-bring-home-button {
+  color: #f4f4f8;
+  background: transparent;
+  border: 1px solid rgb(244 244 248 / 40%);
+}
+
+.split-bring-home-button:hover {
+  background: rgb(244 244 248 / 10%);
+}
+
+/* Below 600px the two panes stack instead of sitting side by side, and the
+   rate buttons don't fit three-across at phone widths, so every one of
+   these dimensions stacks up toward the same scroll budget. This block
+   must come after every base rule it overrides (.split-pane, .split-window,
+   .split-age-counter, .split-formula, .split-math-sentence, .split-controls,
+   .split-rate-button, ...): equal-specificity selectors resolve by source
+   order, so an override declared earlier in the file loses to a later base
+   rule regardless of which media query matches. */
+@media (width < 600px) {
+  .screen-split {
+    gap: 0.6rem;
+    padding: 1rem 1rem 0.75rem;
+  }
+
+  .split-grid {
+    gap: 0.6rem;
+  }
+
+  .split-pane {
+    min-height: 9rem;
+    padding: 0.5rem 0.5rem 0.4rem;
+    gap: 0.3rem;
+  }
+
+  .split-pane .twin-figure {
+    width: 4rem;
+  }
+
+  .split-window {
+    height: 3rem;
+    border-width: 4px;
+  }
+
+  .split-age-counter {
+    font-size: 0.95rem;
+  }
+
+  .split-formula {
+    font-size: 0.85rem;
+  }
+
+  .split-math-sentence {
+    font-size: 0.8rem;
+  }
+
+  .split-controls {
+    gap: 0.5rem;
+  }
+
+  .split-controls-row {
+    gap: 0.5rem;
+  }
+
+  .split-rate-hint {
+    font-size: 0.75rem;
+  }
+
+  .split-rate-button {
+    min-height: 36px;
+    padding: 0.35rem 0.6rem;
+    font-size: 0.72rem;
+  }
+
+  .split-action-buttons {
+    gap: 0.5rem;
+  }
+
+  .split-action-buttons .start-button {
+    min-height: 40px;
+    padding: 0.5rem 1.25rem;
+    font-size: 0.85rem;
+  }
 }
 
 .split-flash {
@@ -866,16 +1052,6 @@ h2:focus-visible {
 .screen-split.is-paused,
 .screen-split.is-paused * {
   animation-play-state: paused !important;
-}
-
-@media (width <= 480px) {
-  .split-pane {
-    min-height: 16rem;
-  }
-
-  .split-window {
-    height: 7rem;
-  }
 }
 
 @media (prefers-reduced-motion: reduce) {

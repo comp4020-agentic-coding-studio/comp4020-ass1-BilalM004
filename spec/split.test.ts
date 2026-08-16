@@ -65,9 +65,12 @@ describe("split screen", () => {
     expect(hint?.textContent).toMatch(/real second/i);
     const group = doc.querySelector(".split-rate-buttons");
     expect(group?.getAttribute("aria-label")).toMatch(/real second/i);
+    // The buttons themselves drop "real" to stay short -- the hint and the
+    // group's aria-label are what carry that "real time you spend watching"
+    // framing for screen reader users.
     const buttons = doc.querySelectorAll(".split-rate-button");
     for (const button of buttons) {
-      expect(button.textContent).toMatch(/real second/i);
+      expect(button.textContent).toMatch(/second/i);
     }
   });
 

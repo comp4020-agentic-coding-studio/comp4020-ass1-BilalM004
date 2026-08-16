@@ -115,7 +115,7 @@ function syncPausedClass(sim: ActiveSim): void {
 }
 
 function updatePlayButton(sim: ActiveSim): void {
-  sim.refs.playButton.textContent = sim.playing ? "Pause" : "Play";
+  sim.refs.playButton.textContent = sim.playing ? "Pause simulation" : "Play simulation";
   sim.refs.playButton.setAttribute("aria-pressed", String(sim.playing));
 }
 
