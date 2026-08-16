@@ -39,9 +39,9 @@ describe("progress rail", () => {
     expect(rail?.getAttribute("aria-label")?.trim()).not.toBe("");
   });
 
-  it("only enables the start button by default -- the rest aren't reached yet", () => {
+  it("keeps every step button enabled, so the rail can jump ahead as well as back", () => {
     const buttons = [...doc.querySelectorAll<HTMLButtonElement>(".progress-step-button")];
-    expect(buttons.map((button) => button.hasAttribute("disabled"))).toEqual([false, true, true, true, true]);
+    expect(buttons.every((button) => !button.hasAttribute("disabled"))).toBe(true);
   });
 });
 

@@ -70,11 +70,11 @@ describe("renderProgressRail", () => {
     expect(steps.map((el) => el.dataset.state)).toEqual(["done", "done", "done", "done", "current"]);
   });
 
-  it("only enables buttons for reached steps (done or current), not upcoming ones", () => {
+  it("keeps every step's button enabled, including ones not yet reached", () => {
     const steps = makeSteps();
     renderProgressRail(steps, "split");
 
-    expect(steps.map((el) => buttonOf(el).disabled)).toEqual([false, false, false, true, true]);
+    expect(steps.every((el) => !buttonOf(el).disabled)).toBe(true);
   });
 
   it("does nothing for an unknown screen name", () => {

@@ -37,11 +37,10 @@ export function renderProgressRail(steps: HTMLElement[], screenName: string): vo
     const state = stepStateFor(index, currentIndex);
     element.dataset.state = state;
 
-    // Only steps the visitor has already reached (done/current) are
-    // clickable -- you can jump back, but not skip ahead.
+    // Every step is clickable, whether the visitor has reached it yet or
+    // not -- the rail is a scrubber, not a gate.
     const button = element.querySelector<HTMLButtonElement>(".progress-step-button");
     if (button) {
-      button.disabled = state === "upcoming";
       if (state === "current") {
         button.setAttribute("aria-current", "step");
       } else {

@@ -44,25 +44,25 @@ const stars = Array.from({ length: STAR_COUNT }, () => ({
           </button>
         </li>
         <li class="progress-step" data-step="choice" data-state="upcoming">
-          <button type="button" class="progress-step-button" data-step="choice" disabled>
+          <button type="button" class="progress-step-button" data-step="choice">
             <span class="progress-dot" aria-hidden="true"></span>
-            <span class="progress-label">Choice</span>
+            <span class="progress-label">Relativity</span>
           </button>
         </li>
         <li class="progress-step" data-step="compare" data-state="upcoming">
-          <button type="button" class="progress-step-button" data-step="compare" disabled>
+          <button type="button" class="progress-step-button" data-step="compare">
             <span class="progress-dot" aria-hidden="true"></span>
             <span class="progress-label">Compare</span>
           </button>
         </li>
         <li class="progress-step" data-step="reunion" data-state="upcoming">
-          <button type="button" class="progress-step-button" data-step="reunion" disabled>
+          <button type="button" class="progress-step-button" data-step="reunion">
             <span class="progress-dot" aria-hidden="true"></span>
             <span class="progress-label">Reunion</span>
           </button>
         </li>
         <li class="progress-step" data-step="explain" data-state="upcoming">
-          <button type="button" class="progress-step-button" data-step="explain" disabled>
+          <button type="button" class="progress-step-button" data-step="explain">
             <span class="progress-dot" aria-hidden="true"></span>
             <span class="progress-label">Explain</span>
           </button>
@@ -99,11 +99,9 @@ const stars = Array.from({ length: STAR_COUNT }, () => ({
       </section>
 
       <section id="screen-choice" class="screen" data-screen="choice" hidden>
-        <h2 tabindex="-1">Choose a path</h2>
-        <p class="tagline">Speed bends time too. Follow the twin who goes.</p>
-        <button id="special-relativity-button" class="start-button" type="button">
-          Special Relativity
-        </button>
+        <h2 tabindex="-1">Special relativity</h2>
+        <p class="tagline">Speed bends time — watch it happen to the twin who goes.</p>
+        <button id="special-relativity-button" class="start-button" type="button">Continue</button>
       </section>
 
       <section id="screen-launch" class="screen screen-launch" data-screen="launch" hidden>

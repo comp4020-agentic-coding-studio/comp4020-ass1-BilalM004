@@ -127,22 +127,24 @@ function beginSplitScreen(): void {
 }
 
 function goToExplainScreen(): void {
-  if (!lastBringHomeResult) return;
+  // The rail lets the visitor jump here before ever running the simulator --
+  // fall back to a resting (v=0) graph rather than refusing to show the screen.
+  const velocity = lastBringHomeResult?.velocity ?? 0;
 
   const path = document.querySelector<SVGPathElement>("#explain-gamma-path");
   const point = document.querySelector<SVGCircleElement>("#explain-gamma-point");
   const caption = document.querySelector<HTMLElement>("#explain-gamma-caption");
   if (path && point && caption) {
-    renderExplainScreen({ path, point, caption }, lastBringHomeResult.velocity);
+    renderExplainScreen({ path, point, caption }, velocity);
   }
 
   showScreen("explain");
 }
 
-// Jumps to a stage of the story from the progress rail. The rail only
-// enables buttons for steps the visitor has already reached (see
-// renderProgressRail), so "reunion"/"explain" always have a result to show
-// by the time they're clickable.
+// Jumps to a stage of the story from the progress rail. Every step is
+// clickable regardless of progress, so this can jump forward to a stage
+// that has no simulator result yet -- beginSplitScreen/goToExplainScreen
+// fall back to sensible defaults (v=0) rather than assuming one exists.
 function goToStep(step: StepId): void {
   stopLaunchSequence();
   stopSplitScreen();

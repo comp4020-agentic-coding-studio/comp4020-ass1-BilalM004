@@ -1206,8 +1206,19 @@ h2:focus-visible {
 }
 
 /* Explanation screen */
+
+/* This screen has more stacked content than any other (heading, two
+   paragraphs, a graph, a credit line, a button), so unlike elsewhere the
+   default heading/paragraph margins are redundant on top of .screen's own
+   gap -- zeroing them here (at every viewport, not just mobile) is what
+   keeps the whole screen inside the viewport without a page scrollbar. */
+.screen-explain h2 {
+  margin: 0;
+}
+
 .explain-text {
   max-width: 34rem;
+  margin: 0;
   color: #c7c9d9;
 }
 
@@ -1277,13 +1288,12 @@ h2:focus-visible {
    as the split-screen mobile block above. */
 @media (width <= 480px) {
   .screen-explain {
-    gap: 0.5rem;
-    padding: 1rem;
+    gap: 0.35rem;
+    padding: 0.75rem 1rem;
   }
 
   .screen-explain h2 {
-    margin: 0;
-    font-size: 1.2rem;
+    font-size: 1.15rem;
   }
 
   .explain-text {
@@ -1291,16 +1301,21 @@ h2:focus-visible {
   }
 
   .explain-graph {
-    max-width: 11rem;
+    max-width: 9.5rem;
   }
 
   .explain-gamma-caption {
-    margin: 0.25rem 0 0;
-    font-size: 0.8rem;
+    margin: 0.2rem 0 0;
+    font-size: 0.78rem;
   }
 
   .explain-aside {
-    font-size: 0.75rem;
+    margin: 0;
+    font-size: 0.72rem;
+  }
+
+  .explain-credit {
+    font-size: 0.65rem;
   }
 
   .screen-explain .start-button,
@@ -1557,10 +1572,6 @@ h2:focus-visible {
   cursor: pointer;
   background: none;
   border: 0;
-}
-
-.progress-step-button:disabled {
-  cursor: default;
 }
 
 .progress-step-button:focus-visible {
