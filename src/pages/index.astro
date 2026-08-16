@@ -147,6 +147,39 @@ const stars = Array.from({ length: STAR_COUNT }, () => ({
       </section>
     </main>
 
+    <div class="music-widget" id="music-widget" data-expanded="false">
+      <button
+        id="music-toggle"
+        class="music-toggle"
+        type="button"
+        aria-expanded="false"
+        aria-controls="music-panel"
+        aria-label="Background music"
+      >
+        <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+          <path
+            fill="currentColor"
+            d="M12 3a8 8 0 0 0-8 8v6a2 2 0 0 0 2 2h1a1 1 0 0 0 1-1v-5a1 1 0 0 0-1-1H5v-1a7 7 0 0 1 14 0v1h-2a1 1 0 0 0-1 1v5a1 1 0 0 0 1 1h1a2 2 0 0 0 2-2v-6a8 8 0 0 0-8-8Z"
+          />
+        </svg>
+      </button>
+
+      <div class="music-panel" id="music-panel" hidden>
+        <div class="music-panel-header">
+          <span>Interstellar — Hans Zimmer</span>
+          <button id="music-close" class="music-close" type="button" aria-label="Close music player">✕</button>
+        </div>
+        <div class="music-frame-wrap">
+          <iframe
+            id="music-iframe"
+            title="Interstellar soundtrack by Hans Zimmer, looping background music"
+            allow="autoplay; encrypted-media; picture-in-picture; fullscreen"
+            allowfullscreen
+          ></iframe>
+        </div>
+      </div>
+    </div>
+
     <script src="../scripts/main.ts"></script>
   </body>
 </html>

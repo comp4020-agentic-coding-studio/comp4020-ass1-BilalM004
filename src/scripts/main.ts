@@ -1,7 +1,23 @@
 import { skipLaunchSequence, startLaunchSequence, stopLaunchSequence } from "./launchScene";
+import { initMusicWidget } from "./musicWidget";
 import { bringTwinsHome, startSplitScreen, stopSplitScreen, type BringHomeResult } from "./splitScreen";
 
 const screens = document.querySelectorAll<HTMLElement>("[data-screen]");
+
+const musicWidget = document.querySelector<HTMLElement>("#music-widget");
+const musicToggle = document.querySelector<HTMLButtonElement>("#music-toggle");
+const musicClose = document.querySelector<HTMLButtonElement>("#music-close");
+const musicPanel = document.querySelector<HTMLElement>("#music-panel");
+const musicIframe = document.querySelector<HTMLIFrameElement>("#music-iframe");
+if (musicWidget && musicToggle && musicClose && musicPanel && musicIframe) {
+  initMusicWidget({
+    widget: musicWidget,
+    toggleButton: musicToggle,
+    closeButton: musicClose,
+    panel: musicPanel,
+    iframe: musicIframe,
+  });
+}
 
 function showScreen(name: string): void {
   let target: HTMLElement | null = null;
