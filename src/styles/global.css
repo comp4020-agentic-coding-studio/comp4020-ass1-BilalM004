@@ -11,7 +11,14 @@
   display: none !important;
 }
 
+/* body is a flex column so each full-screen page (main > .screen) fills
+   exactly the viewport height left over *after* the header, instead of the
+   old approach (each .screen claiming its own min-height: 100vh while the
+   header sits above it in flow) which pushed the document past 100vh by the
+   header's own height on every screen and forced a page scroll. */
 body {
+  display: flex;
+  flex-direction: column;
   margin: 0;
   padding: 0;
   min-height: 100vh;
@@ -24,6 +31,7 @@ body {
 header {
   position: relative;
   z-index: 2;
+  flex: 0 0 auto;
 }
 
 nav {
@@ -221,14 +229,24 @@ a {
 main {
   position: relative;
   z-index: 1;
+  display: flex;
+  flex: 1 1 auto;
+  flex-direction: column;
+  min-height: 0;
 }
 
+/* flex: 1 (not min-height: 100vh) so the visible screen fills exactly the
+   space main has left after the header, however tall that turns out to be --
+   see the body/header/main flex chain above. Content-box padding no longer
+   stacks on top of a 100vh floor because there's no fixed-viewport floor
+   here at all. */
 .screen {
-  min-height: 100vh;
   display: flex;
+  flex: 1 1 auto;
   flex-direction: column;
   align-items: center;
   justify-content: center;
+  min-height: 0;
   gap: 1rem;
   padding: 2rem;
   text-align: center;
@@ -687,14 +705,10 @@ h2:focus-visible {
 
 /* Split-screen: time dilation simulator */
 .screen-split {
-  /* Unlike the other screens, this one is a fixed, dense block of controls
-     rather than centred full-screen content -- .screen's min-height: 100vh
-     is a floor on top of which this section's own padding still adds (the
-     site doesn't use box-sizing: border-box), so it works against fitting
-     the slider/buttons on screen together without scrolling. Content alone
-     decides the height here. */
-  min-height: auto;
-  gap: 1rem;
+  /* This screen is a dense block of controls rather than loosely-centred
+     content, so it wants less bottom padding than the other screens' uniform
+     2rem -- everything else about fitting on screen without scrolling comes
+     from the shared .screen flex-fill behaviour above. */
   padding-top: 2rem;
   padding-bottom: 1rem;
 }
@@ -1127,6 +1141,45 @@ h2:focus-visible {
   margin: 0;
   font-size: 0.7rem;
   color: rgb(199 201 217 / 60%);
+}
+
+/* This screen has the most text of any of them (heading, two paragraphs, a
+   graph, a credit line, a restart button), so at phone width it's the one
+   screen that doesn't fit the shared .screen flex-fill without shrinking its
+   own content too -- everything below trims size rather than letting the
+   page scroll. Must come after every base rule it overrides, same reasoning
+   as the split-screen mobile block above. */
+@media (width <= 480px) {
+  .screen-explain {
+    gap: 0.5rem;
+    padding: 1rem;
+  }
+
+  .screen-explain h2 {
+    margin: 0;
+    font-size: 1.2rem;
+  }
+
+  .explain-text {
+    font-size: 0.85rem;
+  }
+
+  .explain-graph {
+    max-width: 11rem;
+  }
+
+  .explain-gamma-caption {
+    margin: 0.25rem 0 0;
+    font-size: 0.8rem;
+  }
+
+  .explain-aside {
+    font-size: 0.75rem;
+  }
+
+  .screen-explain .start-button {
+    margin-top: 0;
+  }
 }
 
 /* Reunion */
